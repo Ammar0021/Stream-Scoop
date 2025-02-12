@@ -1,4 +1,5 @@
 import os
+from time import sleep
 import sys
 import yt_dlp as YT
 import colorama as clr
@@ -50,6 +51,23 @@ def create_progress_hook(desc):
 
     return progress_hook
 
+def log_download(url, save_path, download_type):
+    log_file = os.path.join(save_path, "download_history.txt")
+    with open(log_file, "a") as f:
+        f.write(f"{download_type} | {url} | {save_path}\n")
+
+def unique_filename(save_path, title, ext):
+    base_filename = os.path.join(save_path, f"{title}.{ext}")
+    if not os.path.exists(base_filename):
+        return base_filename
+
+    counter = 1
+    while True:
+        new_filename = os.path.join(save_path, f"{title}{counter}.{ext}")
+        if not os.path.exists(new_filename):
+            return new_filename
+        counter += 1
+
 def download_video_audio(url, save_path):
     try:
         ydl_opts = {
@@ -59,6 +77,37 @@ def download_video_audio(url, save_path):
 
         with YT.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
+            if 'entries' in info:  # Check if it's a playlist
+                print(Fore.CYAN + "Playlist detected. Displaying videos...\n"); sleep(1.5)
+                entries = info['entries']
+                for i, entry in enumerate(entries, 1):
+                    print(f"{i}. {entry['title']}")
+
+                while True:
+                    try:
+                        choices = input("\nEnter the numbers of the videos to download (comma-separated, e.g., 1,3,5): ").strip()
+                        choice_indices = [int(x) - 1 for x in choices.split(',')]
+                        if all(0 <= idx < len(entries) for idx in choice_indices):
+                            break
+                        else:
+                            raise ValueError("Invalid selection. Please choose numbers from the list.")
+                    except ValueError as e:
+                        print(Fore.RED + f"Error: {str(e)}")
+                        print(Fore.YELLOW + f"Please enter valid numbers separated by commas.\n")
+
+                selected_entries = [entries[idx] for idx in choice_indices]
+                ydl_opts.update({
+                    'outtmpl': os.path.join(save_path, '%(playlist_title)s/%(title)s.%(ext)s'),
+                    'progress_hooks': [create_progress_hook("Downloading Playlist")],
+                })
+                with YT.YoutubeDL(ydl_opts) as ydl:
+                    ydl.download([entry['webpage_url'] for entry in selected_entries])
+                log_download(url, save_path, "Playlist")
+                clear_screen()
+                print(Fore.GREEN + "Selected videos from playlist downloaded successfully!\n")
+                print(Fore.LIGHTMAGENTA_EX + "Your videos have been saved in" + Fore.LIGHTYELLOW_EX + f" {save_path}")
+                return
+
             if info.get('is_live'):
                 raise ValueError("Live streams cannot be Downloaded, You can still Download Live Streams that are Over tho") 
             formats = info.get('formats', [])
@@ -102,7 +151,7 @@ def download_video_audio(url, save_path):
                     if 0 <= choice_idx < len(sorted_qualities):
                         break  
                     else:
-                        raise ValueError("Invalid  selection. Please choose a number from the list.")
+                        raise ValueError("Invalid selection. Please choose a number from the list.")
                 except ValueError as e:
                     print(Fore.RED + f"Error: {str(e)}")
                     print(Fore.YELLOW + f"Please enter a number between 1 and {len(sorted_qualities)}.\n")
@@ -111,10 +160,10 @@ def download_video_audio(url, save_path):
             
             download_opts = {
                     'format': f"bestvideo[height={selected_height}]+bestaudio/best",
-                    'outtmpl': os.path.join(save_path, '%(title)s.%(ext)s'),
+                    'outtmpl': unique_filename(save_path, '%(title)s.%(ext)s'),
                     'restrictfilenames': True,
                     'merge_output_format': 'mp4',  # This already triggers merging to MP4
-                     'progress_hooks': [create_progress_hook("Downloading Video+Audio")],
+                    'progress_hooks': [create_progress_hook("Downloading Video+Audio")],
                     #'concurrent-fragments': 5,
              }
 
@@ -123,6 +172,7 @@ def download_video_audio(url, save_path):
             with YT.YoutubeDL(download_opts) as ydl:
                 ydl.download([url])
             
+            log_download(url, save_path, "Video")
             clear_screen()
             print(Fore.GREEN + "Download completed successfully!\n")
             print(Fore.LIGHTMAGENTA_EX + "Your Video has been saved in" + Fore.LIGHTYELLOW_EX + f" {save_path}")
@@ -175,7 +225,7 @@ def download_audio_only(url, save_path):
 
             opts = {
                 'format': selected_format['format_id'],  
-                'outtmpl': os.path.join(save_path, '%(title)s.%(ext)s'),
+                'outtmpl': unique_filename(save_path, '%(title)s.%(ext)s'),
                 'restrictfilenames': True,
                 'postprocessors': [{
                     'key': 'FFmpegExtractAudio',
@@ -191,6 +241,7 @@ def download_audio_only(url, save_path):
             with YT.YoutubeDL(opts) as ydl:
                 ydl.download([url])
 
+            log_download(url, save_path, "Audio")
             print(Fore.GREEN + "\nAudio download completed!")
             print(Fore.LIGHTMAGENTA_EX + "Your Audio has been saved in" + Fore.LIGHTYELLOW_EX + f" {save_path}")
 
@@ -269,7 +320,7 @@ def download_subtitles(url, save_path):
                 'subtitleslangs': [selected['lang']],
                 'subtitlesformat': selected['ext'],
                 'skip_download': True,  # Only download subtitles
-                'outtmpl': os.path.join(save_path, '%(title)s.%(ext)s'),
+                'outtmpl': unique_filename(save_path, '%(title)s.%(ext)s'),
                 'restrictfilenames': True,
                 'progress_hooks': [create_progress_hook("Downloading Subtitles")],
             }
@@ -281,6 +332,7 @@ def download_subtitles(url, save_path):
             with YT.YoutubeDL(opts) as ydl:
                 ydl.download([url])
             
+            log_download(url, save_path, "Subtitles")
             print(Fore.GREEN + "\nSubtitles downloaded successfully!")
             print(Fore.LIGHTMAGENTA_EX + "Your Subtitle has been saved in" + Fore.LIGHTYELLOW_EX + f" {save_path}")
 
