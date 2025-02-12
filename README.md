@@ -14,6 +14,8 @@ A powerful script that lets you download YouTube videos, audios, and subtitles.
 1. Clone the repository:
     ```sh
     git clone https://github.com/Ammar0021/Youtube-Downloader.git
+    ```
+    ```sh
     cd Youtube-Downloader
     ```
 
