@@ -8,7 +8,7 @@
 
 ## Specific Cases
 
-- **System PATH**: Confirm that FFmpeg is correctly installed and added to the system's PATH.
+- **System PATH**: Confirm that FFmpeg is correctly installed and added to the system's PATH. Also check if files download to desired path
 - **Restricted/Private Content**: Test the ability to download restricted or private content, if applicable.
 - **Live Streams**: Ensure the application can download live streams that have already ended.
 - **YouTube Shorts**: Verify the application can download YouTube Shorts without any problems.
