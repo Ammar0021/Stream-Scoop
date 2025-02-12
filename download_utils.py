@@ -7,6 +7,7 @@ from colorama import Fore
 from tqdm import tqdm
 import re
 import random as rand
+from datetime import datetime
 
 RANDOM_COLOURS = [Fore.RED, Fore.LIGHTRED_EX, Fore.GREEN, Fore.LIGHTGREEN_EX, Fore.YELLOW, Fore.LIGHTYELLOW_EX, Fore.BLUE, Fore.LIGHTBLUE_EX, Fore.MAGENTA, Fore.LIGHTMAGENTA_EX, Fore.CYAN, Fore.LIGHTCYAN_EX,]
 
@@ -53,23 +54,25 @@ def create_progress_hook(desc):
 
 def log_download(url, save_path, download_type):
     log_file = os.path.join(save_path, "download_history.txt")
+    os.makedirs(save_path, exist_ok=True)  
     with open(log_file, "a") as f:
         f.write(f"{download_type} | {url} | {save_path}\n")
 
-def unique_filename(save_path, title, ext):
-    base_filename = os.path.join(save_path, f"{title}.{ext}")
-    if not os.path.exists(base_filename):
-        return base_filename
+def unique_filename(title):
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    return f"{title}_{timestamp}"
 
-    counter = 1
-    while True:
-        new_filename = os.path.join(save_path, f"{title}{counter}.{ext}")
-        if not os.path.exists(new_filename):
-            return new_filename
-        counter += 1
 
 def download_video_audio(url, save_path):
     try:
+        resolution_names = {
+            "4320p": " (8K)",
+            "2160p": " (4K)",
+            "1440p": " (Quad HD)",
+            "1080p": " (Full HD)",
+            "720p": " (HD)"
+        }
+
         ydl_opts = {
             'quiet': True,
             'no_warnings': True
@@ -77,39 +80,110 @@ def download_video_audio(url, save_path):
 
         with YT.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
-            if 'entries' in info:  # Check if it's a playlist
-                print(Fore.CYAN + "Playlist detected. Displaying videos...\n"); sleep(1.5)
+
+            if 'entries' in info:
+                print(Fore.CYAN + "Playlist detected. Displaying videos...\n")
+                sleep(1.5)
                 entries = info['entries']
+
+                # Display playlist videos
                 for i, entry in enumerate(entries, 1):
                     print(f"{i}. {entry['title']}")
 
+                # Get user selection
                 while True:
                     try:
-                        choices = input("\nEnter the numbers of the videos to download (comma-separated, e.g., 1,3,5): ").strip()
-                        choice_indices = [int(x) - 1 for x in choices.split(',')]
+                        choices = input("\nEnter video numbers (e.g., 1,3,5): ").strip()
+                        choice_indices = [int(x)-1 for x in choices.split(',')]
+                        
                         if all(0 <= idx < len(entries) for idx in choice_indices):
                             break
                         else:
-                            raise ValueError("Invalid selection. Please choose numbers from the list.")
+                            raise ValueError("Invalid selection")
                     except ValueError as e:
                         print(Fore.RED + f"Error: {str(e)}")
-                        print(Fore.YELLOW + f"Please enter valid numbers separated by commas.\n")
+                        print(Fore.YELLOW + "Enter valid numbers separated by commas\n")
 
                 selected_entries = [entries[idx] for idx in choice_indices]
+
+                # Get formats from first selected video for quality selection
+                first_entry = selected_entries[0]
+                formats = first_entry.get('formats', [])
+                video_qualities = {}
+
+                # Filter valid video formats
+                for f in formats:
+                    if f.get('vcodec') == 'none' or f.get('format_note') == 'storyboard':
+                        continue
+                    res = f"{f.get('height', '?')}p"
+                    if res not in video_qualities or f.get('tbr', 0) > video_qualities[res]['tbr']:
+                        video_qualities[res] = {
+                            'format_id': f['format_id'],
+                            'height': f.get('height', 0),
+                            'tbr': f.get('tbr', 0)
+                        }
+
+                sorted_qualities = sorted(video_qualities.items(), 
+                                        key=lambda x: -x[1]['height'])
+                
+                if not sorted_qualities:
+                    raise ValueError("No downloadable video formats found!")
+
+                # Quality selection UI
+                clear_screen()
+                print(Fore.CYAN + "Available Qualities:\n")
+                for i, (res, details) in enumerate(sorted_qualities, 1):
+                    res_name = resolution_names.get(res, "")
+                    print(rand.choice(RANDOM_COLOURS) + f"{i}: {res}{res_name}")
+
+                # Get quality choice
+                while True:
+                    try:
+                        choice = input("\nChoose quality (number): ").strip()
+                        choice_idx = int(choice) - 1
+                        if 0 <= choice_idx < len(sorted_qualities):
+                            selected_height = sorted_qualities[choice_idx][1]['height']
+                            break
+                        else:
+                            raise ValueError("Invalid selection")
+                    except ValueError as e:
+                        print(Fore.RED + f"Error: {str(e)}")
+                        print(Fore.YELLOW + f"Enter 1-{len(sorted_qualities)}\n")
+
+                # Configure playlist download options
                 ydl_opts.update({
-                    'outtmpl': os.path.join(save_path, '%(playlist_title)s/%(title)s.%(ext)s'),
+                    'paths': {'home': save_path},  # Critical for folder creation
+                    'format': f"bestvideo[height={selected_height}]+bestaudio/best",
+                    'merge_output_format': 'mp4',
+                    'outtmpl': os.path.join(
+                        '%(playlist_title)s',
+                        f"{unique_filename('%(title)s')}.%(ext)s"
+                    ),
+                    'playlist_items': ','.join(str(idx+1) for idx in choice_indices),
                     'progress_hooks': [create_progress_hook("Downloading Playlist")],
                 })
-                with YT.YoutubeDL(ydl_opts) as ydl:
-                    ydl.download([entry['webpage_url'] for entry in selected_entries])
-                log_download(url, save_path, "Playlist")
+
+                # Execute playlist download
                 clear_screen()
-                print(Fore.GREEN + "Selected videos from playlist downloaded successfully!\n")
-                print(Fore.LIGHTMAGENTA_EX + "Your videos have been saved in" + Fore.LIGHTYELLOW_EX + f" {save_path}")
+                print(Fore.CYAN + " Downloading Playlist ".center(50, "="))
+                with YT.YoutubeDL(ydl_opts) as ydl:
+                    ydl.download([url])  # Must use original playlist URL
+
+                # Post-download actions
+                for entry in selected_entries:
+                    log_download(entry['webpage_url'], 
+                               os.path.join(save_path, info.get('title', 'Unknown Playlist')),
+                               "Playlist Video")
+
+                clear_screen()
+                print(Fore.GREEN + "Playlist download completed successfully!")
+                print(Fore.LIGHTMAGENTA_EX + "Saved in:" + Fore.LIGHTYELLOW_EX + f" {save_path}")
                 return
 
+            # Single Video Handling
             if info.get('is_live'):
-                raise ValueError("Live streams cannot be Downloaded, You can still Download Live Streams that are Over tho") 
+                raise ValueError("Live streams cannot be downloaded. You can download completed live streams.")
+
             formats = info.get('formats', [])
             video_qualities = {}
 
@@ -117,7 +191,7 @@ def download_video_audio(url, save_path):
                 if f.get('vcodec') == 'none' or f.get('format_note') == 'storyboard' or f.get('quality') == -1:
                     continue
 
-                res = f"{f.get('height', '?')}p" 
+                res = f"{f.get('height', '?')}p"
                 if res not in video_qualities or f.get('tbr', 0) > video_qualities[res]['tbr']:
                     video_qualities[res] = {
                         'format_id': f['format_id'],
@@ -127,16 +201,9 @@ def download_video_audio(url, save_path):
 
             sorted_qualities = sorted(video_qualities.items(), key=lambda x: -x[1]['height'])
             if not sorted_qualities:
-                raise ValueError("No downloadable video formats found!")  
-            
-            resolution_names = {
-                "4320p": " (8K)",
-                "2160p": " (4K)",
-                "1440p": " (Quad HD)",
-                "1080p": " (Full HD)",
-                "720p": " (HD)"
-            }
-            
+                raise ValueError("No downloadable video formats found!")
+
+            # Quality Selection for Single Video
             clear_screen()
             print(Fore.CYAN + "Available Qualities:\n")
             for i, (res, details) in enumerate(sorted_qualities, 1):
@@ -147,35 +214,33 @@ def download_video_audio(url, save_path):
                 try:
                     choice = input("\nChoose quality (number): ").strip()
                     choice_idx = int(choice) - 1
-                    
                     if 0 <= choice_idx < len(sorted_qualities):
-                        break  
+                        selected_height = sorted_qualities[choice_idx][1]['height']
+                        break
                     else:
-                        raise ValueError("Invalid selection. Please choose a number from the list.")
+                        raise ValueError("Invalid selection. Choose a number from the list.")
                 except ValueError as e:
                     print(Fore.RED + f"Error: {str(e)}")
-                    print(Fore.YELLOW + f"Please enter a number between 1 and {len(sorted_qualities)}.\n")
-                    
-            selected_height = sorted_qualities[choice_idx][1]['height']
-            
+                    print(Fore.YELLOW + f"Enter a number between 1 and {len(sorted_qualities)}.\n")
+
+            # Configure Download Options for Single Video
             download_opts = {
-                    'format': f"bestvideo[height={selected_height}]+bestaudio/best",
-                    'outtmpl': unique_filename(save_path, '%(title)s.%(ext)s'),
-                    'restrictfilenames': True,
-                    'merge_output_format': 'mp4',  # This already triggers merging to MP4
-                    'progress_hooks': [create_progress_hook("Downloading Video+Audio")],
-                    #'concurrent-fragments': 5,
-             }
+                'format': f"bestvideo[height={selected_height}]+bestaudio/best",
+                'outtmpl': os.path.join(save_path, f"{unique_filename('%(title)s')}.%(ext)s"),
+                'restrictfilenames': True,
+                'merge_output_format': 'mp4',
+                'progress_hooks': [create_progress_hook("Downloading Video+Audio")],
+            }
 
             clear_screen()
             print(Fore.CYAN + " Downloading Video+Audio... ".center(50, "="))
             with YT.YoutubeDL(download_opts) as ydl:
                 ydl.download([url])
-            
+
             log_download(url, save_path, "Video")
             clear_screen()
             print(Fore.GREEN + "Download completed successfully!\n")
-            print(Fore.LIGHTMAGENTA_EX + "Your Video has been saved in" + Fore.LIGHTYELLOW_EX + f" {save_path}")
+            print(Fore.LIGHTMAGENTA_EX + "Your video has been saved in:" + Fore.LIGHTYELLOW_EX + f" {save_path}")
 
     except Exception as e:
         handle_error(e)

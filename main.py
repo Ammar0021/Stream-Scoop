@@ -18,7 +18,7 @@ RANDOM_COLOURS = [Fore.RED, Fore.LIGHTRED_EX, Fore.GREEN, Fore.LIGHTGREEN_EX, Fo
    
 def check_ffmpeg():
     try:
-        print(Fore.LIGHTCYAN_EX + "Checking FFmpeg installation...\n"); sleep(1.5)
+        print(Fore.LIGHTCYAN_EX + "Checking if FFmpeg is Installed...\n"); sleep(1.1)
         sp.run(['ffmpeg', '-version'], stdout=sp.PIPE, stderr=sp.PIPE, check=True)
         return True
     except sp.CalledProcessError:
@@ -94,6 +94,7 @@ def main():
         print(Fore.LIGHTYELLOW_EX + "\nDownload FFmpeg from: " + Fore.LIGHTWHITE_EX + "https://ffmpeg.org/download.html")
         sys.exit(1)
 
+    clear_screen()
     print(Fore.LIGHTRED_EX + " YouTube Downloader ".center(50, "=")); sleep(0.5)
 
     for option in ["\n1. Download Video", "2. Download Audio Only", "3. Download Subtitles"]:
