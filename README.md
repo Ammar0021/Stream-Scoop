@@ -35,9 +35,19 @@ A simple script that lets you download YouTube videos, audios, and subtitles.
 
 ## Features
 
+<<<<<<< HEAD
 - **Download Videos**: Download videos in all available qualities.
 - **Download Audios**: Download audios in different bitrates.
 - **Download Subtitles**: Download subtitles in multiple languages.
+=======
+- **Download Videos**: Choose from a range of video qualities, including 8K, 4K, Full HD, and more.
+- **Download Audios**: Extract high-quality audio in various bitrates.
+- **Download Subtitles**: Access subtitles in multiple languages, including automatic captions.
+
+## Testing
+
+Refer to the [testing.md](testing.md) file for a comprehensive list of test cases to ensure the script works as expected.
+>>>>>>> 4c11598 (UPDATED)
 
 ## License
 
