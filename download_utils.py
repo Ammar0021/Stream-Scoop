@@ -199,7 +199,6 @@ def download_audio_only(url, save_path):
 
 def download_subtitles(url, save_path):
     try:
-        clear_screen()
         ydl_opts = {'quiet': True, 'no_warnings': True}
         with YT.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
