@@ -46,7 +46,7 @@ A powerful script that lets you download YouTube videos, audios, and subtitles.
 
 ## Testing
 
-Refer to [testing.md](testing.md) for for scenarios that have been tested to imporve the program 
+Refer to [testing.md](testing.md) for scenarios that have been tested to imporve the program 
 
 ## License
 
