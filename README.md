@@ -25,6 +25,9 @@ A powerful script that lets you download YouTube videos, audios, and subtitles.
     ```
 
 3. Ensure FFmpeg is installed and added to your system's PATH.
+    ```sh
+    MacOS/Linux: brew install ffmpeg 
+    Windows: chcoco install ffmpeg
 
 ## Usage
 
