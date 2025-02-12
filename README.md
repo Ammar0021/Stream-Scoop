@@ -1,6 +1,6 @@
 # YouTube Downloader
 
-A simple script that lets you download YouTube videos, audios, and subtitles.
+A powerful script that lets you download YouTube videos, audios, and subtitles.
 
 ## Requirements
 
