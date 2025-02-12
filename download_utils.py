@@ -303,8 +303,6 @@ def handle_error(e):
         print(Fore.YELLOW + "FFmpeg error. Ensure it's installed and in PATH")
     else:
         print(Fore.YELLOW + "Unknown error occurred. Please try again")
-        
-        
-#git commit testing
+
         
 

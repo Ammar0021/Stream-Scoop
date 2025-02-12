@@ -18,6 +18,7 @@ RANDOM_COLOURS = [Fore.RED, Fore.LIGHTRED_EX, Fore.GREEN, Fore.LIGHTGREEN_EX, Fo
    
 def check_ffmpeg():
     try:
+        print(Fore.LIGHTCYAN_EX + "Checking FFmpeg installation...\n"); sleep(1.5)
         sp.run(['ffmpeg', '-version'], stdout=sp.PIPE, stderr=sp.PIPE, check=True)
         return True
     except sp.CalledProcessError:
@@ -87,8 +88,10 @@ def get_save_path():
 def main():
     clear_screen()
     if not check_ffmpeg():
-        print(Fore.RED + "FFmpeg is not installed or not in PATH!"); sleep(1)
-        print(Fore.YELLOW + "\nDownload FFmpeg from: https://ffmpeg.org/download.html")
+        clear_screen()
+        print(Fore.RED + "FFmpeg is not installed or not in PATH!")
+        print(Fore.LIGHTBLUE_EX + "FFmpeg is needed to Download Videos"); sleep(1)
+        print(Fore.LIGHTYELLOW_EX + "\nDownload FFmpeg from: " + Fore.LIGHTWHITE_EX + "https://ffmpeg.org/download.html")
         sys.exit(1)
 
     print(Fore.LIGHTRED_EX + " YouTube Downloader ".center(50, "=")); sleep(0.5)
@@ -124,7 +127,3 @@ def main():
                 
 if __name__ == "__main__":
     main()
-    
-    
-
-#git commit testing
