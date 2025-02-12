@@ -5,7 +5,7 @@ A powerful script that lets you download YouTube videos, audios, and subtitles.
 ## Requirements
 
 - **FFmpeg**: Required for downloading and processing videos and audios.
-  - Install FFmpeg from: [https://ffmpeg.org/download.html](https://ffmpeg.org/download.html)
+  - Install FFmpeg manually from: [https://ffmpeg.org/download.html](https://ffmpeg.org/download.html)
 - **Python Packages**: Listed in `requirements.txt`
   - Install them using: `pip install -r requirements.txt`
 
