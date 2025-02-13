@@ -7,11 +7,12 @@ from time import sleep
 from urllib.parse import urlparse
 import subprocess as sp
 
-from download_utils import clear_screen, download_video_audio, download_audio_only, download_subtitles, handle_error
+from download_utils import clear_screen, download_video_audio, download_audio_only, download_subtitles, handle_error, get_cookies
 
 clr.init(autoreset=True)  
 
-'''You can Change the Current Default Path, by modifying the DEFAULT_PATH variable below'''
+'''this AUTO creates a "Videos" folder in ur Desktop (if does not exist),
+You can Change the Current Default Path, by modifying the DEFAULT_PATH variable below'''
 DEFAULT_PATH = os.path.join(os.path.expanduser("~"), "Desktop", "Videos") # '~' is the user's home directory
 
 RANDOM_COLOURS = [Fore.RED, Fore.LIGHTRED_EX, Fore.GREEN, Fore.LIGHTGREEN_EX, Fore.YELLOW, Fore.LIGHTYELLOW_EX, Fore.BLUE, Fore.LIGHTBLUE_EX, Fore.MAGENTA, Fore.LIGHTMAGENTA_EX, Fore.CYAN, Fore.LIGHTCYAN_EX,]
@@ -27,17 +28,33 @@ def check_ffmpeg():
         return False
 
 def get_url():
+    urls = []
+    print(Fore.LIGHTGREEN_EX + "\nEnter YouTube URLs (one per line). Type 'done' or 'd' to finish:")
+    
     while True:
         try:
             print(Fore.LIGHTRED_EX + "\nPaste YouTube URL: ", end='')
             url = input().strip()
+            
+            if url.lower() in ('done', 'd'):
+                if not urls:
+                    raise ValueError(Fore.YELLOW + "No URLs entered\n")
+                break
+            
             validate_url(url)
-            return url
+            urls.append(url)
+            print(Fore.LIGHTGREEN_EX + "URL added successfully!")
+            
         except ValueError as e:
             print(Fore.LIGHTRED_EX + f"Error: {str(e)}")
-            print(Fore.YELLOW + "Enter a valid YouTube URL!")
+            print(Fore.BLUE + "Enter a valid YouTube URL!")
+            
+    return urls
             
 def validate_url(url):
+    if url.lower() in ('done', 'd'):
+        return True
+    
     parsed = urlparse(url)
     valid_schemes = ["http", "https"]
     valid_domains = ["youtube.com","www.youtube.com", "www.youtu.be", "youtu.be"]
@@ -62,7 +79,7 @@ def get_save_path():
                 break  
             elif choice in ('n', 'no'):
                 try:
-                    save_path = input(Fore.BLUE + "Enter custom path: ").strip()
+                    save_path = input(Fore.WHITE + "\nEnter custom path: ").strip()
                     save_path = os.path.expanduser(save_path)
                     save_path = os.path.expandvars(save_path)
 
@@ -104,18 +121,21 @@ def main():
         try:
             choice = input("\nEnter your choice (1-3): ").strip()
             if choice in ('1', '2', '3'):
-                url = get_url()
+                cookie_file = get_cookies()
+                clear_screen()
+                urls = get_url()
                 save_path = get_save_path()
 
-                if choice == '1':
-                    print(Fore.CYAN + "\nProcessing URL...")
-                    download_video_audio(url, save_path)    
-                elif choice == '2':
-                    print(Fore.CYAN + "\nProcessing URL...")
-                    download_audio_only(url, save_path)
-                elif choice == '3':
-                    print(Fore.CYAN + "\nProcessing URL...")
-                    download_subtitles(url, save_path)
+                for url in urls:
+                    if choice == '1':
+                        print(Fore.BLUE + "\nProcessing URL...")
+                        download_video_audio(url, save_path, cookie_file)    
+                    elif choice == '2':
+                        print(Fore.BLUE + "\nProcessing URL...")
+                        download_audio_only(url, save_path, cookie_file)
+                    elif choice == '3':
+                        print(Fore.BLUE + "\nProcessing URL...")
+                        download_subtitles(url, save_path, cookie_file)
                 break 
             else:
                 raise ValueError(Fore.LIGHTRED_EX + "Invalid choice! Enter 1, 2, or 3.")
@@ -130,4 +150,4 @@ if __name__ == "__main__":
     main()
 
 
-#git commit testing 
+#git commit test

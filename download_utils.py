@@ -19,7 +19,22 @@ def clear_screen():
     elif sys.platform in ["linux", "darwin"]:
         os.system("clear")
     else:
-        print("\033c", end="")        
+        print("\033c", end="") 
+        
+def get_cookies():
+    while True:
+        print(Fore.LIGHTBLUE_EX + "\n(🍪) Enter the path to your Cookies File (Press ENTER to Skip): ", end= '')
+        cookie_file = input().strip()
+        
+        if not cookie_file:
+            print(Fore.LIGHTYELLOW_EX + "\nProceeding without Cookies.."); sleep(0.9)  
+            return None
+        
+        if os.path.exists(cookie_file):
+            print(Fore.LIGHTGREEN_EX + "Using Cookies from:", cookie_file)
+            return cookie_file
+        else:
+            print(Fore.LIGHTRED_EX + f"Error: Cookie File '{cookie_file}' does not exist!")
 
 def create_progress_hook(desc):
     pbar = None
@@ -63,7 +78,7 @@ def unique_filename(title):
     return f"{title}_{timestamp}"
 
 
-def download_video_audio(url, save_path):
+def download_video_audio(url, save_path, cookie_file=None):
     try:
         resolution_names = {
             "4320p": " (8K)",
@@ -77,110 +92,13 @@ def download_video_audio(url, save_path):
             'quiet': True,
             'no_warnings': True
         }
+        
+        if cookie_file:
+            ydl_opts['cookies'] = cookie_file
 
         with YT.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
 
-            if 'entries' in info:
-                print(Fore.CYAN + "Playlist detected. Displaying videos...\n")
-                sleep(1.5)
-                entries = info['entries']
-
-                # Display playlist videos
-                for i, entry in enumerate(entries, 1):
-                    print(f"{i}. {entry['title']}")
-
-                # Get user selection
-                while True:
-                    try:
-                        choices = input("\nEnter video numbers (e.g., 1,3,5): ").strip()
-                        choice_indices = [int(x)-1 for x in choices.split(',')]
-                        
-                        if all(0 <= idx < len(entries) for idx in choice_indices):
-                            break
-                        else:
-                            raise ValueError("Invalid selection")
-                    except ValueError as e:
-                        print(Fore.RED + f"Error: {str(e)}")
-                        print(Fore.YELLOW + "Enter valid numbers separated by commas\n")
-
-                selected_entries = [entries[idx] for idx in choice_indices]
-
-                # Get formats from first selected video for quality selection
-                first_entry = selected_entries[0]
-                formats = first_entry.get('formats', [])
-                video_qualities = {}
-
-                # Filter valid video formats
-                for f in formats:
-                    if f.get('vcodec') == 'none' or f.get('format_note') == 'storyboard':
-                        continue
-                    res = f"{f.get('height', '?')}p"
-                    if res not in video_qualities or f.get('tbr', 0) > video_qualities[res]['tbr']:
-                        video_qualities[res] = {
-                            'format_id': f['format_id'],
-                            'height': f.get('height', 0),
-                            'tbr': f.get('tbr', 0)
-                        }
-
-                sorted_qualities = sorted(video_qualities.items(), 
-                                        key=lambda x: -x[1]['height'])
-                
-                if not sorted_qualities:
-                    raise ValueError("No downloadable video formats found!")
-
-                # Quality selection UI
-                clear_screen()
-                print(Fore.CYAN + "Available Qualities:\n")
-                for i, (res, details) in enumerate(sorted_qualities, 1):
-                    res_name = resolution_names.get(res, "")
-                    print(rand.choice(RANDOM_COLOURS) + f"{i}: {res}{res_name}")
-
-                # Get quality choice
-                while True:
-                    try:
-                        choice = input("\nChoose quality (number): ").strip()
-                        choice_idx = int(choice) - 1
-                        if 0 <= choice_idx < len(sorted_qualities):
-                            selected_height = sorted_qualities[choice_idx][1]['height']
-                            break
-                        else:
-                            raise ValueError("Invalid selection")
-                    except ValueError as e:
-                        print(Fore.RED + f"Error: {str(e)}")
-                        print(Fore.YELLOW + f"Enter 1-{len(sorted_qualities)}\n")
-
-                # Configure playlist download options
-                ydl_opts.update({
-                    'paths': {'home': save_path},  # Critical for folder creation
-                    'format': f"bestvideo[height={selected_height}]+bestaudio/best",
-                    'merge_output_format': 'mp4',
-                    'outtmpl': os.path.join(
-                        '%(playlist_title)s',
-                        f"{unique_filename('%(title)s')}.%(ext)s"
-                    ),
-                    'playlist_items': ','.join(str(idx+1) for idx in choice_indices),
-                    'progress_hooks': [create_progress_hook("Downloading Playlist")],
-                })
-
-                # Execute playlist download
-                clear_screen()
-                print(Fore.CYAN + " Downloading Playlist ".center(50, "="))
-                with YT.YoutubeDL(ydl_opts) as ydl:
-                    ydl.download([url])  # Must use original playlist URL
-
-                # Post-download actions
-                for entry in selected_entries:
-                    log_download(entry['webpage_url'], 
-                               os.path.join(save_path, info.get('title', 'Unknown Playlist')),
-                               "Playlist Video")
-
-                clear_screen()
-                print(Fore.GREEN + "Playlist download completed successfully!")
-                print(Fore.LIGHTMAGENTA_EX + "Saved in:" + Fore.LIGHTYELLOW_EX + f" {save_path}")
-                return
-
-            # Single Video Handling
             if info.get('is_live'):
                 raise ValueError("Live streams cannot be downloaded. You can download completed live streams.")
 
@@ -229,7 +147,7 @@ def download_video_audio(url, save_path):
                 'outtmpl': os.path.join(save_path, f"{unique_filename('%(title)s')}.%(ext)s"),
                 'restrictfilenames': True,
                 'merge_output_format': 'mp4',
-                'progress_hooks': [create_progress_hook("Downloading Video+Audio")],
+                'progress_hooks': [create_progress_hook("Downloading Video and Audio")],
             }
 
             clear_screen()
@@ -245,9 +163,16 @@ def download_video_audio(url, save_path):
     except Exception as e:
         handle_error(e)
 
-def download_audio_only(url, save_path):
+def download_audio_only(url, save_path, cookie_file=None):
     try:
-        ydl_opts = {'quiet': True, 'no_warnings': True}
+        ydl_opts = {
+            'quiet': True,
+            'no_warnings': True
+        }
+        
+        if cookie_file:
+            ydl_opts['cookies'] = cookie_file
+            
         with YT.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
             formats = info.get('formats', [])
@@ -313,9 +238,16 @@ def download_audio_only(url, save_path):
     except Exception as e:
         handle_error(e)
 
-def download_subtitles(url, save_path):
+def download_subtitles(url, save_path, cookie_file=None) :
     try:
-        ydl_opts = {'quiet': True, 'no_warnings': True}
+        ydl_opts = {
+            'quiet': True,
+            'no_warnings': True    
+        }
+        
+        if cookie_file:
+            ydl_opts['cookies'] = cookie_file
+            
         with YT.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
             
@@ -421,5 +353,4 @@ def handle_error(e):
     else:
         print(Fore.YELLOW + "Unknown error occurred. Please try again")
 
-        
-#git commit testing
+#git
