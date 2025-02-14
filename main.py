@@ -29,7 +29,9 @@ def check_ffmpeg():
 
 def get_url():
     urls = []
-    print(Fore.LIGHTGREEN_EX + "Enter YouTube URLs (one per line). Type 'done' or 'd' to finish:")
+    from colorama import Fore
+    print(f"{Fore.LIGHTGREEN_EX}Enter YouTube URLs (one per line). Type {Fore.WHITE}'done'{Fore.LIGHTGREEN_EX} or {Fore.WHITE}'d'{Fore.LIGHTGREEN_EX} to finish:")
+
     
     while True:
         try:
@@ -60,10 +62,10 @@ def validate_url(url):
     valid_domains = ["youtube.com","www.youtube.com", "www.youtu.be", "youtu.be"]
 
     if parsed.scheme not in valid_schemes:
-        raise ValueError(f"Invalid URL scheme. Expected 'http' or 'https', got '{parsed.scheme}'.")
+        raise ValueError(f"Invalid URL scheme. Expected {Fore.WHITE}'http' {Fore.LIGHTRED_EX}or {Fore.WHITE}'https'.")
     
     if parsed.netloc not in valid_domains:
-        raise ValueError(f"Invalid domain. Expected 'youtube.com' or 'youtu.be', got '{parsed.netloc}'.")
+        raise ValueError(f"Invalid domain. Expected {Fore.WHITE}'youtube.com' {Fore.LIGHTRED_EX}or {Fore.WHITE}'youtu.be'.")
     
     return True
 
@@ -108,7 +110,7 @@ def main():
         clear_screen()
         print(Fore.RED + "FFmpeg is not installed or not in PATH!")
         print(Fore.LIGHTBLUE_EX + "FFmpeg is needed to Download Videos"); sleep(1)
-        print(Fore.LIGHTYELLOW_EX + "\nDownload FFmpeg from: " + Fore.LIGHTWHITE_EX + "https://ffmpeg.org/download.html")
+        print(Fore.LIGHTYELLOW_EX + "\nDownload FFmpeg from: " + Fore.LIGHTWHITE_EX + "https://ffmpeg.org/download.html\n")
         sys.exit(1)
 
     clear_screen()

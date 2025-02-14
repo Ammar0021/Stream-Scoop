@@ -31,10 +31,10 @@ def get_cookies():
             return None
         
         if os.path.exists(cookie_file):
-            print(Fore.LIGHTGREEN_EX + "Using Cookies from:", cookie_file)
+            print(Fore.LIGHTGREEN_EX + "Using Cookies from: " + Fore.WHITE + cookie_file); sleep(0.9)
             return cookie_file
         else:
-            print(Fore.LIGHTRED_EX + f"Error: Cookie File '{cookie_file}' does not exist!")
+            print(Fore.LIGHTRED_EX + f"Error: Cookie File {Fore.WHITE}'{cookie_file}'{Fore.LIGHTRED_EX} does not exist!")
 
 def create_progress_hook(desc):
     pbar = None
