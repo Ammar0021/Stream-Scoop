@@ -69,9 +69,12 @@ def create_progress_hook(desc):
 
 def log_download(url, save_path, download_type):
     log_file = os.path.join(save_path, "download_history.txt")
-    os.makedirs(save_path, exist_ok=True)  
+    os.makedirs(save_path, exist_ok=True)
+    
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
     with open(log_file, "a") as f:
-        f.write(f"{download_type} | {url} | {save_path}\n")
+        f.write(f"{download_type} | {url} | {save_path} | {timestamp}\n\n")
 
 def unique_filename(title):
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -159,6 +162,7 @@ def download_video_audio(url, save_path, cookie_file=None):
             clear_screen()
             print(Fore.GREEN + "Download completed successfully!\n")
             print(Fore.LIGHTMAGENTA_EX + "Your video has been saved in:" + Fore.LIGHTYELLOW_EX + f" {save_path}")
+            print(Fore.LIGHTBLUE_EX + f"\nYour Download has been Logged in 'download_history.txt")
 
     except Exception as e:
         handle_error(e)
@@ -234,6 +238,7 @@ def download_audio_only(url, save_path, cookie_file=None):
             log_download(url, save_path, "Audio")
             print(Fore.GREEN + "\nAudio download completed!")
             print(Fore.LIGHTMAGENTA_EX + "Your Audio has been saved in" + Fore.LIGHTYELLOW_EX + f" {save_path}")
+            print(Fore.LIGHTBLUE_EX + f"\nYour Download has been Logged in 'download_history.txt")
 
     except Exception as e:
         handle_error(e)
@@ -332,6 +337,7 @@ def download_subtitles(url, save_path, cookie_file=None) :
             log_download(url, save_path, "Subtitles")
             print(Fore.GREEN + "\nSubtitles downloaded successfully!")
             print(Fore.LIGHTMAGENTA_EX + "Your Subtitle has been saved in" + Fore.LIGHTYELLOW_EX + f" {save_path}")
+            print(Fore.LIGHTBLUE_EX + f"\nYour Download has been Logged in 'download_history.txt")
 
     except Exception as e:
         handle_error(e)
@@ -350,7 +356,10 @@ def handle_error(e):
         print(Fore.YELLOW + "Content blocked due to copyright (©️)")
     elif "ffmpeg" in err_msg:
         print(Fore.YELLOW + "FFmpeg error. Ensure it's installed and in PATH")
+    elif "cookies" in err_msg:
+        print(Fore.YELLOW + "Cookies error. Ensure the cookies file is valid and up-to-date.")
     else:
         print(Fore.YELLOW + "Unknown error occurred. Please try again")
+        
 
 #git commit

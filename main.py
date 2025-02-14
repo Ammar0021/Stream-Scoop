@@ -29,7 +29,7 @@ def check_ffmpeg():
 
 def get_url():
     urls = []
-    print(Fore.LIGHTGREEN_EX + "\nEnter YouTube URLs (one per line). Type 'done' or 'd' to finish:")
+    print(Fore.LIGHTGREEN_EX + "Enter YouTube URLs (one per line). Type 'done' or 'd' to finish:")
     
     while True:
         try:
