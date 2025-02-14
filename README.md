@@ -43,6 +43,12 @@ A simple yet powerful script that lets you download YouTube videos, audios, and 
 - **Download Videos**: Download videos in various qualities, including 8K,4K and HD
 - **Download Audios**: Extract and download audio tracks in multiple bitrates and formats.
 - **Download Subtitles**:  Fetch and download subtitles in different languages, including automatic captions.
+- **Cookies Support**: Use cookies to download age-restricted or private videos. The script will prompt you to provide a cookies file if needed.
+
+## Cookies
+
+- Use a browser extension like [Get cookies.txt](https://chromewebstore.google.com/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc)
+- When prompted by the script, enter the PATH to your cookies file. If you don't have a cookies file, you can skip this step, but note that some videos may not be downloadable without cookies.
 
 ## Testing
 
