@@ -21,20 +21,6 @@ def clear_screen():
     else:
         print("\033c", end="") 
         
-def get_cookies():
-    while True:
-        print(Fore.LIGHTBLUE_EX + "\n(🍪) Enter the path to your Cookies File (Press ENTER to Skip): ", end= '')
-        cookie_file = input().strip()
-        
-        if not cookie_file:
-            print(Fore.LIGHTYELLOW_EX + "\nProceeding without Cookies.."); sleep(0.9)  
-            return None
-        
-        if os.path.exists(cookie_file):
-            print(Fore.LIGHTGREEN_EX + "Using Cookies from: " + Fore.WHITE + cookie_file); sleep(0.9)
-            return cookie_file
-        else:
-            print(Fore.LIGHTRED_EX + f"Error: Cookie File {Fore.WHITE}'{cookie_file}'{Fore.LIGHTRED_EX} does not exist!")
 
 def create_progress_hook(desc):
     pbar = None
@@ -81,7 +67,7 @@ def unique_filename(title):
     return f"{title}_{timestamp}"
 
 
-def download_video_audio(url, save_path, cookie_file=None):
+def download_video_audio(url, save_path, use_cookies=False):
     try:
         resolution_names = {
             "4320p": " (8K)",
@@ -92,12 +78,12 @@ def download_video_audio(url, save_path, cookie_file=None):
         }
 
         ydl_opts = {
-            'quiet': True,
+            'quiet': False,
             'no_warnings': True
         }
         
-        if cookie_file:
-            ydl_opts['cookies'] = cookie_file
+        if use_cookies:
+            ydl_opts['cookiesfrombrowser'] = ('chrome',)
 
         with YT.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
@@ -167,15 +153,16 @@ def download_video_audio(url, save_path, cookie_file=None):
     except Exception as e:
         handle_error(e)
 
-def download_audio_only(url, save_path, cookie_file=None):
+def download_audio_only(url, save_path, use_cookies=False): 
     try:
         ydl_opts = {
             'quiet': True,
             'no_warnings': True
         }
         
-        if cookie_file:
-            ydl_opts['cookies'] = cookie_file
+        if use_cookies:
+            ydl_opts['cookiesfrombrowser'] = ('chrome',)
+        
             
         with YT.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
@@ -219,7 +206,7 @@ def download_audio_only(url, save_path, cookie_file=None):
 
             opts = {
                 'format': selected_format['format_id'],  
-                'outtmpl': unique_filename(save_path, '%(title)s.%(ext)s'),
+                'outtmpl': os.path.join(save_path, f"{unique_filename('%(title)s')}.%(ext)s"),
                 'restrictfilenames': True,
                 'postprocessors': [{
                     'key': 'FFmpegExtractAudio',
@@ -243,15 +230,17 @@ def download_audio_only(url, save_path, cookie_file=None):
     except Exception as e:
         handle_error(e)
 
-def download_subtitles(url, save_path, cookie_file=None) :
+def download_subtitles(url, save_path, use_cookies=False) :
     try:
         ydl_opts = {
             'quiet': True,
             'no_warnings': True    
         }
         
-        if cookie_file:
-            ydl_opts['cookies'] = cookie_file
+        if use_cookies:
+            print(Fore.BLUE + "Proceeding with cookies")
+            ydl_opts['cookiesfrombrowser'] = ('chrome',) ;sleep(0.5)
+        
             
         with YT.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
@@ -322,7 +311,7 @@ def download_subtitles(url, save_path, cookie_file=None) :
                 'subtitleslangs': [selected['lang']],
                 'subtitlesformat': selected['ext'],
                 'skip_download': True,  # Only download subtitles
-                'outtmpl': unique_filename(save_path, '%(title)s.%(ext)s'),
+                'outtmpl': os.path.join(save_path, f"{unique_filename('%(title)s')}.%(ext)s"),
                 'restrictfilenames': True,
                 'progress_hooks': [create_progress_hook("Downloading Subtitles")],
             }
@@ -357,7 +346,7 @@ def handle_error(e):
     elif "ffmpeg" in err_msg:
         print(Fore.YELLOW + "FFmpeg error. Ensure it's installed and in PATH")
     elif "cookies" in err_msg:
-        print(Fore.YELLOW + "Cookies error. Ensure the cookies file is valid and up-to-date.")
+        print(Fore.YELLOW + "Cookies error. Ensure your cookies are up to date.")
     else:
         print(Fore.YELLOW + "Unknown error occurred. Please try again")
         
