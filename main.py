@@ -7,7 +7,7 @@ from time import sleep
 from urllib.parse import urlparse
 import subprocess as sp
 
-from download_utils import clear_screen, download_video_audio, download_audio_only, download_subtitles, handle_error
+from download_utils import clear_screen, download_video_audio, download_audio_only, download_subtitles, handle_error, get_cookies
 
 clr.init(autoreset=True)  
 
@@ -82,6 +82,8 @@ def get_save_path():
             elif choice in ('n', 'no'):
                 try:
                     save_path = input(Fore.WHITE + "\nEnter custom path: ").strip()
+                    
+                    save_path = save_path.strip('"\'')
                     save_path = os.path.expanduser(save_path)
                     save_path = os.path.expandvars(save_path)
 
@@ -123,32 +125,21 @@ def main():
         try:
             choice = input("\nEnter your choice (1-3): ").strip()
             if choice in ('1', '2', '3'):
-                while True:  
-                    use_cookies_input = input(Fore.LIGHTGREEN_EX + "\nDo you want to use cookies? (Y/n): ").strip().lower()
-                    if use_cookies_input in ('', 'y', 'yes', 'n', 'no'):
-                        use_cookies = use_cookies_input in ('', 'y', 'yes')  # Convert to boolean
-                        if use_cookies:
-                            print(Fore.BLUE + "Proceeding with cookies..."); sleep(0.5)
-                        elif use_cookies_input in ('n', 'no'):
-                            print(Fore.BLUE + "Proceeding without cookies..."); sleep(0.5)
-                        break 
-                    else:
-                        print(Fore.RED + "Error: Invalid input. Please enter 'Y' for yes or 'N' for no.")
-                        
-                clear_screen()        
+                cookie_file = get_cookies()
+                clear_screen()
                 urls = get_url()
                 save_path = get_save_path()
 
                 for url in urls:
                     if choice == '1':
                         print(Fore.BLUE + "\nProcessing URL...")
-                        download_video_audio(url, save_path, use_cookies)    
+                        download_video_audio(url, save_path, cookie_file)    
                     elif choice == '2':
                         print(Fore.BLUE + "\nProcessing URL...")
-                        download_audio_only(url, save_path, use_cookies)
+                        download_audio_only(url, save_path, cookie_file)
                     elif choice == '3':
                         print(Fore.BLUE + "\nProcessing URL...")
-                        download_subtitles(url, save_path, use_cookies)
+                        download_subtitles(url, save_path, cookie_file)
                 break 
             else:
                 raise ValueError(Fore.LIGHTRED_EX + "Invalid choice! Enter 1, 2, or 3.")
@@ -161,6 +152,3 @@ def main():
                 
 if __name__ == "__main__":
     main()
-
-
-#git commit testing

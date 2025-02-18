@@ -21,6 +21,20 @@ def clear_screen():
     else:
         print("\033c", end="") 
         
+def get_cookies():
+    while True:
+        print(Fore.LIGHTBLUE_EX + "\n(🍪) Enter the path to your Cookies File (Press ENTER to Skip): ", end= '')
+        cookie_file = input().strip()
+        
+        if not cookie_file:
+            print(Fore.LIGHTYELLOW_EX + "\nProceeding without Cookies.."); sleep(0.9)  
+            return None
+        
+        if os.path.exists(cookie_file):
+            print(Fore.LIGHTGREEN_EX + "Using Cookies from: " + Fore.WHITE + cookie_file); sleep(0.9)
+            return cookie_file
+        else:
+            print(Fore.LIGHTRED_EX + f"Error: Cookie File {Fore.WHITE}'{cookie_file}'{Fore.LIGHTRED_EX} does not exist!")
 
 def create_progress_hook(desc):
     pbar = None
@@ -67,7 +81,7 @@ def unique_filename(title):
     return f"{title}_{timestamp}"
 
 
-def download_video_audio(url, save_path, use_cookies=False):
+def download_video_audio(url, save_path, cookie_file=None):
     try:
         resolution_names = {
             "4320p": " (8K)",
@@ -78,18 +92,18 @@ def download_video_audio(url, save_path, use_cookies=False):
         }
 
         ydl_opts = {
-            'quiet': False,
+            'quiet': True,
             'no_warnings': True
         }
         
-        if use_cookies:
-            ydl_opts['cookiesfrombrowser'] = ('chrome',)
+        if cookie_file:
+            ydl_opts['cookiefile'] = cookie_file
 
         with YT.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
 
             if info.get('is_live'):
-                raise ValueError("Live streams cannot be downloaded. You can download completed live streams.")
+                raise ValueError("Live streams cannot be downloaded. You can download completed live streams tho")
 
             formats = info.get('formats', [])
             video_qualities = {}
@@ -137,8 +151,9 @@ def download_video_audio(url, save_path, use_cookies=False):
                 'restrictfilenames': True,
                 'merge_output_format': 'mp4',
                 'progress_hooks': [create_progress_hook("Downloading Video and Audio")],
+                'cookiefile': cookie_file if cookie_file else None,
             }
-
+            
             clear_screen()
             print(Fore.CYAN + " Downloading Video+Audio... ".center(50, "="))
             with YT.YoutubeDL(download_opts) as ydl:
@@ -153,16 +168,15 @@ def download_video_audio(url, save_path, use_cookies=False):
     except Exception as e:
         handle_error(e)
 
-def download_audio_only(url, save_path, use_cookies=False): 
+def download_audio_only(url, save_path, cookie_file=None):
     try:
         ydl_opts = {
             'quiet': True,
             'no_warnings': True
         }
         
-        if use_cookies:
-            ydl_opts['cookiesfrombrowser'] = ('chrome',)
-        
+        if cookie_file:
+            ydl_opts['cookiefile'] = cookie_file
             
         with YT.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
@@ -206,15 +220,15 @@ def download_audio_only(url, save_path, use_cookies=False):
 
             opts = {
                 'format': selected_format['format_id'],  
-                'outtmpl': os.path.join(save_path, f"{unique_filename('%(title)s')}.%(ext)s"),
+                'outtmpl': unique_filename(save_path, '%(title)s.%(ext)s'),
                 'restrictfilenames': True,
                 'postprocessors': [{
                     'key': 'FFmpegExtractAudio',
                     'preferredcodec': 'mp3',
-                    'preferredquality': str(preferred_quality),
-                    #'concurrent-fragments': 7,  
+                    'preferredquality': str(preferred_quality),           
                 }],
                 'progress_hooks': [create_progress_hook("Downloading Audio")],
+                'cookiefile': cookie_file if cookie_file else None,
             }
 
             clear_screen()
@@ -230,17 +244,15 @@ def download_audio_only(url, save_path, use_cookies=False):
     except Exception as e:
         handle_error(e)
 
-def download_subtitles(url, save_path, use_cookies=False) :
+def download_subtitles(url, save_path, cookie_file=None) :
     try:
         ydl_opts = {
             'quiet': True,
             'no_warnings': True    
         }
         
-        if use_cookies:
-            print(Fore.BLUE + "Proceeding with cookies")
-            ydl_opts['cookiesfrombrowser'] = ('chrome',) ;sleep(0.5)
-        
+        if cookie_file:
+            ydl_opts['cookiefile'] = cookie_file
             
         with YT.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
@@ -266,7 +278,7 @@ def download_subtitles(url, save_path, use_cookies=False) :
             
             if not all_subtitles:
                 raise ValueError("No subtitles available for this video!")
-            
+        
             filter_english = input("Display only English subtitles? (Y/n): ").strip().lower()
             if filter_english in ('', 'y', 'yes'):
                 all_subtitles = [sub for sub in all_subtitles if sub['lang'].lower() == 'en']
@@ -285,16 +297,27 @@ def download_subtitles(url, save_path, use_cookies=False) :
                     sub = all_subtitles[i]
                     sub_type = "Auto" if sub['is_auto'] else "Manual"
                     print(rand.choice(RANDOM_COLOURS) + f"{i + 1}: {sub['lang'].upper()} ({sub_type}) - {sub['ext'].upper()}")
+                
+                sys.stdout.flush() 
 
             current_page = 0
             while True:
                 display_page(current_page)
                 try:
-                    choice = input("\nChoose subtitle (number) or navigate (n: next, p: previous): ").strip()
-                    if choice.lower() == 'n' and current_page < total_pages - 1:
-                        current_page += 1
-                    elif choice.lower() == 'p' and current_page > 0:
-                        current_page -= 1
+                    choice = input(f"\nChoose subtitle (number) or navigate ({Fore.YELLOW}n{Fore.WHITE}: next, {Fore.YELLOW}p{Fore.WHITE}: previous): ").strip().lower()
+
+                    if choice == 'n':  # Go to next page
+                        if current_page < total_pages - 1:
+                            current_page += 1
+                        else:
+                            current_page = 0  # Wrap around to the first page if on the last page
+
+                    elif choice == 'p':  # Go to previous page
+                        if current_page > 0:
+                            current_page -= 1
+                        else:
+                            current_page = total_pages - 1  # Wrap around to the last page if on the first page
+
                     else:
                         choice_idx = int(choice) - 1
                         if 0 <= choice_idx < len(all_subtitles):
@@ -305,6 +328,7 @@ def download_subtitles(url, save_path, use_cookies=False) :
                 except ValueError:
                     print(Fore.RED + "Error: Invalid input. Please enter a valid number or navigation command.")
 
+
             opts = {
                 'writesubtitles': not selected['is_auto'],
                 'writeautomaticsub': selected['is_auto'],
@@ -314,8 +338,9 @@ def download_subtitles(url, save_path, use_cookies=False) :
                 'outtmpl': os.path.join(save_path, f"{unique_filename('%(title)s')}.%(ext)s"),
                 'restrictfilenames': True,
                 'progress_hooks': [create_progress_hook("Downloading Subtitles")],
+                'cookiefile': cookie_file if cookie_file else None,
             }
-
+            
             clear_screen()
             title = f" Downloading {selected['lang'].upper()} Subtitles ({selected['ext'].upper()})... "
             print(Fore.CYAN + title.center(50, "="))
@@ -327,10 +352,30 @@ def download_subtitles(url, save_path, use_cookies=False) :
             print(Fore.GREEN + "\nSubtitles downloaded successfully!")
             print(Fore.LIGHTMAGENTA_EX + "Your Subtitle has been saved in" + Fore.LIGHTYELLOW_EX + f" {save_path}")
             print(Fore.LIGHTBLUE_EX + f"\nYour Download has been Logged in 'download_history.txt")
+            
+        convert_to_srt = input("\nDo you want to convert the subtitles to .srt format? (Y/n): ").strip().lower()
+        if convert_to_srt in ('', 'y', 'yes'):
+            convert_subtitles_to_srt(save_path, selected['ext'])
 
     except Exception as e:
         handle_error(e)
+
+def convert_subtitles_to_srt(file_path, current_ext):
+    try:
+        # Locate the downloaded subtitle file
+        subtitle_file = f"{file_path}.{current_ext}"
+        srt_file = f"{file_path}.srt"
+
+        if current_ext != 'srt':
+            # Rename the file if the extension is different from .srt
+            os.rename(subtitle_file, srt_file)
+            print(Fore.GREEN + f"\nSubtitles successfully converted to {srt_file}")
+        else:
+            print(Fore.YELLOW + "\nSubtitles are already in .srt format.")
+    except Exception as e:
+        print(Fore.RED + f"Error during subtitle conversion: {e}")
         
+
 def handle_error(e):
     print(Fore.LIGHTRED_EX + f"\nError: {str(e)}")
     err_msg = str(e).lower()
@@ -346,7 +391,7 @@ def handle_error(e):
     elif "ffmpeg" in err_msg:
         print(Fore.YELLOW + "FFmpeg error. Ensure it's installed and in PATH")
     elif "cookies" in err_msg:
-        print(Fore.YELLOW + "Cookies error. Ensure your cookies are up to date.")
+        print(Fore.YELLOW + "Cookies error. Ensure the cookies file is valid and up-to-date.")
     else:
         print(Fore.YELLOW + "Unknown error occurred. Please try again")
         
