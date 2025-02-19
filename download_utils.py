@@ -26,6 +26,8 @@ def get_cookies():
         print(Fore.LIGHTBLUE_EX + "\n(🍪) Enter the path to your Cookies File (Press ENTER to Skip): ", end= '')
         cookie_file = input().strip()
         
+        cookie_file = cookie_file.strip('"\'')
+        
         if not cookie_file:
             print(Fore.LIGHTYELLOW_EX + "\nProceeding without Cookies.."); sleep(0.9)  
             return None
@@ -256,6 +258,9 @@ def download_subtitles(url, save_path, cookie_file=None) :
             
         with YT.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
+            title = info.get('title', 'video')  
+            unique_name = unique_filename(title) 
+            
             
             all_subtitles = []
             for lang, formats in info.get('subtitles', {}).items():
@@ -279,11 +284,21 @@ def download_subtitles(url, save_path, cookie_file=None) :
             if not all_subtitles:
                 raise ValueError("No subtitles available for this video!")
         
-            filter_english = input("Display only English subtitles? (Y/n): ").strip().lower()
-            if filter_english in ('', 'y', 'yes'):
-                all_subtitles = [sub for sub in all_subtitles if sub['lang'].lower() == 'en']
-                if not all_subtitles:
-                    raise ValueError("No English subtitles available for this video!")
+            while True:
+                try:
+                    filter_english = input("Display only English subtitles? (Y/n): ").strip().lower()
+                    
+                    if filter_english in ('', 'y', 'yes', 'n', 'no'):
+                        if filter_english in ('', 'y', 'yes'):
+                            all_subtitles = [sub for sub in all_subtitles if sub['lang'].lower() == 'en']
+                            if not all_subtitles:
+                                raise ValueError(Fore.LIGHTRED_EX + "\nNo English subtitles available for this video!")
+                        break  
+                    else:
+                        raise ValueError(Fore.LIGHTRED_EX + "\nInvalid input. Please enter 'Y', 'y', 'Yes', 'N', or 'n'.")
+                except ValueError as e:
+                    print(e)
+
 
             page_size = 20
             total_pages = (len(all_subtitles) + page_size - 1) // page_size
@@ -328,14 +343,16 @@ def download_subtitles(url, save_path, cookie_file=None) :
                 except ValueError:
                     print(Fore.RED + "Error: Invalid input. Please enter a valid number or navigation command.")
 
-
+            selected_ext = selected['ext']
+            selected_lang = selected['lang']
+            
             opts = {
                 'writesubtitles': not selected['is_auto'],
                 'writeautomaticsub': selected['is_auto'],
                 'subtitleslangs': [selected['lang']],
                 'subtitlesformat': selected['ext'],
                 'skip_download': True,  # Only download subtitles
-                'outtmpl': os.path.join(save_path, f"{unique_filename('%(title)s')}.%(ext)s"),
+                'outtmpl': os.path.join(save_path, f"{unique_name}"), 
                 'restrictfilenames': True,
                 'progress_hooks': [create_progress_hook("Downloading Subtitles")],
                 'cookiefile': cookie_file if cookie_file else None,
@@ -353,27 +370,43 @@ def download_subtitles(url, save_path, cookie_file=None) :
             print(Fore.LIGHTMAGENTA_EX + "Your Subtitle has been saved in" + Fore.LIGHTYELLOW_EX + f" {save_path}")
             print(Fore.LIGHTBLUE_EX + f"\nYour Download has been Logged in 'download_history.txt")
             
-        convert_to_srt = input("\nDo you want to convert the subtitles to .srt format? (Y/n): ").strip().lower()
-        if convert_to_srt in ('', 'y', 'yes'):
-            convert_subtitles_to_srt(save_path, selected['ext'])
+            
+        # Ask user to convert
+        while True:
+            try:
+                convert_to_srt = input(f"\n{Fore.YELLOW}Convert subtitles to .srt? ({Fore.WHITE}Y/n): ").strip().lower()
+                if convert_to_srt in ('', 'y', 'yes'):
+                    subtitle_base = os.path.join(save_path, f"{unique_name}.{selected_lang}") 
+                    convert_subtitles_to_srt(subtitle_base, selected_ext)  # Use selected_ext
+                    break
+                elif convert_to_srt in ('n', 'no'):
+                    break
+                else:
+                    raise ValueError("Invalid input.")
+            except ValueError as e:
+                print(e)
 
     except Exception as e:
         handle_error(e)
 
-def convert_subtitles_to_srt(file_path, current_ext):
+def convert_subtitles_to_srt(file_base, current_ext):
     try:
-        # Locate the downloaded subtitle file
-        subtitle_file = f"{file_path}.{current_ext}"
-        srt_file = f"{file_path}.srt"
+        subtitle_file = f"{file_base}.{current_ext}"
+        srt_file = f"{file_base}.srt"
+
+        print(Fore.YELLOW + f"\nDEBUG: Checking for file -> {subtitle_file}");sleep(2)  # Debug line
 
         if current_ext != 'srt':
-            # Rename the file if the extension is different from .srt
-            os.rename(subtitle_file, srt_file)
-            print(Fore.GREEN + f"\nSubtitles successfully converted to {srt_file}")
+            if os.path.exists(subtitle_file):
+                os.rename(subtitle_file, srt_file)
+                print(Fore.GREEN + f"\nConverted to .srt: {srt_file}")
+            else:
+                print(Fore.RED + f"Error: File not found: {subtitle_file}")
         else:
-            print(Fore.YELLOW + "\nSubtitles are already in .srt format.")
+            print(Fore.YELLOW + "Subtitles are already in .srt format.")
+
     except Exception as e:
-        print(Fore.RED + f"Error during subtitle conversion: {e}")
+        print(Fore.RED + f"Error during conversion: {e}")
         
 
 def handle_error(e):
@@ -395,5 +428,3 @@ def handle_error(e):
     else:
         print(Fore.YELLOW + "Unknown error occurred. Please try again")
         
-
-#git commit
