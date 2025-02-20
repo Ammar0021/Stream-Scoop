@@ -114,6 +114,9 @@ def download_video_audio(url, save_path, cookie_file=None):
                 'outtmpl': os.path.join(save_path, f"{unique_filename('%(title)s')}.%(ext)s"),
                 'restrictfilenames': True,
                 'merge_output_format': 'mp4',
+                'concurrent_fragment_downloads': 3,
+                'keepalive': True, 
+                'force_ip': '4',
                 'cookiefile': cookie_file if cookie_file else None,
             }
             
@@ -189,7 +192,7 @@ def download_audio_only(url, save_path, cookie_file=None):
                 'postprocessors': [{
                     'key': 'FFmpegExtractAudio',
                     'preferredcodec': 'mp3',
-                    'preferredquality': str(preferred_quality),           
+                    'preferredquality': str(preferred_quality),       
                 }],
                 'cookiefile': cookie_file if cookie_file else None,
             }
