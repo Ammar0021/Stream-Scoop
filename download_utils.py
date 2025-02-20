@@ -4,11 +4,8 @@ import sys
 import yt_dlp as YT
 import colorama as clr
 from colorama import Fore
-from tqdm import tqdm
-import re
 import random as rand
 from datetime import datetime
-
 
 RANDOM_COLOURS = [Fore.RED, Fore.LIGHTRED_EX, Fore.GREEN, Fore.LIGHTGREEN_EX, Fore.YELLOW, Fore.LIGHTYELLOW_EX, Fore.BLUE, Fore.LIGHTBLUE_EX, Fore.MAGENTA, Fore.LIGHTMAGENTA_EX, Fore.CYAN, Fore.LIGHTCYAN_EX,]
 
@@ -93,7 +90,6 @@ def download_video_audio(url, save_path, cookie_file=None):
             if not sorted_qualities:
                 raise ValueError("No downloadable video formats found!")
 
-            # Quality Selection for Single Video
             clear_screen()
             print(Fore.CYAN + "Available Qualities:\n")
             for i, (res, details) in enumerate(sorted_qualities, 1):
@@ -112,8 +108,7 @@ def download_video_audio(url, save_path, cookie_file=None):
                 except ValueError as e:
                     print(Fore.RED + f"Error: {str(e)}")
                     print(Fore.YELLOW + f"Enter a number between 1 and {len(sorted_qualities)}.\n")
-
-            # Configure Download Options for Single Video
+                    
             download_opts = {
                 'format': f"bestvideo[height={selected_height}]+bestaudio/best",
                 'outtmpl': os.path.join(save_path, f"{unique_filename('%(title)s')}.%(ext)s"),
@@ -288,13 +283,13 @@ def download_subtitles(url, save_path, cookie_file=None) :
                 try:
                     choice = input(f"\nChoose subtitle (number) or navigate ({Fore.YELLOW}n{Fore.WHITE}: next, {Fore.YELLOW}p{Fore.WHITE}: previous): ").strip().lower()
 
-                    if choice == 'n':  # Go to next page
+                    if choice == 'n': 
                         if current_page < total_pages - 1:
                             current_page += 1
                         else:
                             current_page = 0  # Wrap around to the first page if on the last page
 
-                    elif choice == 'p':  # Go to previous page
+                    elif choice == 'p':  
                         if current_page > 0:
                             current_page -= 1
                         else:
@@ -336,14 +331,12 @@ def download_subtitles(url, save_path, cookie_file=None) :
             print(Fore.LIGHTMAGENTA_EX + "Your Subtitle has been saved in" + Fore.LIGHTYELLOW_EX + f" {save_path}")
             print(Fore.LIGHTBLUE_EX + f"\nYour Download has been Logged in 'download_history.txt")
             
-            
-        # Ask user to convert
         while True:
             try:
                 convert_to_srt = input(f"\n{Fore.YELLOW}Convert subtitles to .srt? ({Fore.WHITE}Y/n): ").strip().lower()
                 if convert_to_srt in ('', 'y', 'yes'):
                     subtitle_base = os.path.join(save_path, f"{unique_name}.{selected_lang}") 
-                    convert_subtitles_to_srt(subtitle_base, selected_ext)  # Use selected_ext
+                    convert_subtitles_to_srt(subtitle_base, selected_ext)  
                     break
                 elif convert_to_srt in ('n', 'no'):
                     break
