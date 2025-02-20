@@ -6,6 +6,7 @@ import random as rand
 from time import sleep
 from urllib.parse import urlparse
 import subprocess as sp
+import signal
 
 from download_utils import clear_screen, download_video_audio, download_audio_only, download_subtitles, handle_error, get_cookies
 
@@ -16,7 +17,8 @@ You can Change the Current Default Path, by modifying the DEFAULT_PATH variable 
 DEFAULT_PATH = os.path.join(os.path.expanduser("~"), "Desktop", "Videos") # '~' is the user's home directory
 
 RANDOM_COLOURS = [Fore.RED, Fore.LIGHTRED_EX, Fore.GREEN, Fore.LIGHTGREEN_EX, Fore.YELLOW, Fore.LIGHTYELLOW_EX, Fore.BLUE, Fore.LIGHTBLUE_EX, Fore.MAGENTA, Fore.LIGHTMAGENTA_EX, Fore.CYAN, Fore.LIGHTCYAN_EX,]
-   
+
+
 def check_ffmpeg():
     try:
         print(Fore.LIGHTCYAN_EX + "Checking if FFmpeg is Installed...\n"); sleep(1.1)
@@ -26,6 +28,13 @@ def check_ffmpeg():
         return False
     except FileNotFoundError:
         return False
+
+def signal_handler(sig, frame):
+    signal_name = signal.Signals(sig).name
+    print(f'\nReceived signal {signal_name} ({sig})')
+    print(f'Interrupted at {frame.f_code.co_name}() in {frame.f_code.co_filename} at line {frame.f_lineno}')
+    print(Fore.LIGHTYELLOW_EX + '\nExiting gracefully...')
+    sys.exit(0)
 
 def get_url():
     urls = []
@@ -108,6 +117,8 @@ def get_save_path():
 
 def main():
     clear_screen()
+    signal.signal(signal.SIGINT, signal_handler)
+    
     if not check_ffmpeg():
         clear_screen()
         print(Fore.RED + "FFmpeg is not installed or not in PATH!")
