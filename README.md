@@ -47,12 +47,12 @@ A simple yet powerful script that lets you download YouTube videos, audios, and 
 
 ## Cookies
 
-- Use a browser extension like [Get cookies.txt](https://chromewebstore.google.com/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc) to Export cookies.
-- When prompted by the script, enter the PATH to your cookies file. If you don't have a cookies file, you can skip this step, but note that some videos may not be downloadable without cookies.
+- Use a browser extension like [Get cookies.txt (LOCALLY)](https://chromewebstore.google.com/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc) to Export cookies.
+- When prompted by the script, enter the PATH to your cookies file (Drag and Drop works). If you don't have a cookies file, you can skip this step, but note that some videos may not be downloadable without cookies.
 
 ## Testing
 
-Refer to [testing.md](testing.md) for scenarios that have been tested to imporve the program 
+Refer to [testing.md](testing.md) for scenarios that have been tested to improve the program 
 
 ## License
 
