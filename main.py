@@ -18,7 +18,6 @@ DEFAULT_PATH = os.path.join(os.path.expanduser("~"), "Desktop", "Videos") # '~' 
 
 RANDOM_COLOURS = [Fore.RED, Fore.LIGHTRED_EX, Fore.GREEN, Fore.LIGHTGREEN_EX, Fore.YELLOW, Fore.LIGHTYELLOW_EX, Fore.BLUE, Fore.LIGHTBLUE_EX, Fore.MAGENTA, Fore.LIGHTMAGENTA_EX, Fore.CYAN, Fore.LIGHTCYAN_EX,]
 
-
 def check_ffmpeg():
     try:
         print(Fore.LIGHTCYAN_EX + "Checking if FFmpeg is Installed...\n"); sleep(1.1)
@@ -28,20 +27,17 @@ def check_ffmpeg():
         return False
     except FileNotFoundError:
         return False
-
 def signal_handler(sig, frame):
     signal_name = signal.Signals(sig).name
-    print(f'\nReceived signal {signal_name} ({sig})')
-    print(f'Interrupted at {frame.f_code.co_name}() in {frame.f_code.co_filename} at line {frame.f_lineno}')
+    print(f'{Fore.LIGHTMAGENTA_EX}\nReceived signal {signal_name} ({sig})')
+    print(f'{Fore.LIGHTBLUE_EX}Interrupted at {frame.f_code.co_name}() in {frame.f_code.co_filename} at line {frame.f_lineno}')
     print(Fore.LIGHTYELLOW_EX + '\nExiting gracefully...')
     sys.exit(0)
-
 def get_url():
     urls = []
     from colorama import Fore
     print(f"{Fore.LIGHTGREEN_EX}Enter YouTube URLs (one per line). Type {Fore.WHITE}'done'{Fore.LIGHTGREEN_EX} or {Fore.WHITE}'d'{Fore.LIGHTGREEN_EX} to finish:")
-
-    
+   
     while True:
         try:
             print(Fore.LIGHTRED_EX + "\nPaste YouTube URL: ", end='')
@@ -58,10 +54,8 @@ def get_url():
             
         except ValueError as e:
             print(Fore.LIGHTRED_EX + f"Error: {str(e)}")
-            print(Fore.BLUE + "Enter a valid YouTube URL!")
-            
-    return urls
-            
+            print(Fore.BLUE + "Enter a valid YouTube URL!")       
+    return urls         
 def validate_url(url):
     if url.lower() in ('done', 'd'):
         return True
@@ -75,9 +69,7 @@ def validate_url(url):
     
     if parsed.netloc not in valid_domains:
         raise ValueError(f"Invalid domain. Expected {Fore.WHITE}'youtube.com' {Fore.LIGHTRED_EX}or {Fore.WHITE}'youtu.be'.")
-    
     return True
-
 def get_save_path():
     print(Fore.LIGHTBLUE_EX + f"\nDefault download path: {DEFAULT_PATH}")
 
@@ -91,7 +83,7 @@ def get_save_path():
             elif choice in ('n', 'no'):
                 try:
                     save_path = input(Fore.WHITE + "\nEnter custom path: ").strip()
-                    
+                                      
                     save_path = save_path.strip('"\'')
                     save_path = os.path.expanduser(save_path)
                     save_path = os.path.expandvars(save_path)
@@ -114,7 +106,6 @@ def get_save_path():
             print(Fore.YELLOW + "Please enter 'Y' for yes or 'n' for no.\n")
 
     return save_path
-
 def main():
     clear_screen()
     signal.signal(signal.SIGINT, signal_handler)
