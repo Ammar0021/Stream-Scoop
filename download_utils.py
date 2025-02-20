@@ -9,6 +9,7 @@ import re
 import random as rand
 from datetime import datetime
 
+
 RANDOM_COLOURS = [Fore.RED, Fore.LIGHTRED_EX, Fore.GREEN, Fore.LIGHTGREEN_EX, Fore.YELLOW, Fore.LIGHTYELLOW_EX, Fore.BLUE, Fore.LIGHTBLUE_EX, Fore.MAGENTA, Fore.LIGHTMAGENTA_EX, Fore.CYAN, Fore.LIGHTCYAN_EX,]
 
 clr.init(autoreset=True)
@@ -38,37 +39,6 @@ def get_cookies():
         else:
             print(Fore.LIGHTRED_EX + f"Error: Cookie File {Fore.WHITE}'{cookie_file}'{Fore.LIGHTRED_EX} does not exist!")
 
-def create_progress_hook(desc):
-    pbar = None
-
-    def progress_hook(d):
-        nonlocal pbar
-        if d['status'] == 'downloading':
-            if pbar is None:
-                pbar = tqdm(
-                    total=100,
-                    desc=desc,
-                    unit="%",
-                    bar_format="{l_bar}{bar}| {n:.1f}% [{elapsed}<{remaining}]",
-                    colour='yellow'  
-                )
-            if '_percent_str' in d:
-                # Remove ANSI color codes and strip '%'
-                percent_str = re.sub(r'\x1b\[[0-9;]*m', '', d['_percent_str'])
-                current_percent = float(percent_str.strip('%'))
-                pbar.update(current_percent - pbar.n)
-
-                # Change color to green when nearing completion
-                if current_percent >= 95:
-                    pbar.colour = 'green'
-        elif d['status'] == 'finished':
-            if pbar:
-                pbar.colour = 'green' 
-                pbar.close()
-                pbar = None
-
-    return progress_hook
-
 def log_download(url, save_path, download_type):
     log_file = os.path.join(save_path, "download_history.txt")
     os.makedirs(save_path, exist_ok=True)
@@ -82,7 +52,6 @@ def unique_filename(title):
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     return f"{title}_{timestamp}"
 
-
 def download_video_audio(url, save_path, cookie_file=None):
     try:
         resolution_names = {
@@ -95,7 +64,8 @@ def download_video_audio(url, save_path, cookie_file=None):
 
         ydl_opts = {
             'quiet': True,
-            'no_warnings': True
+            'no_warnings': True,
+            'noprogress': False
         }
         
         if cookie_file:
@@ -103,9 +73,6 @@ def download_video_audio(url, save_path, cookie_file=None):
 
         with YT.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
-
-            if info.get('is_live'):
-                raise ValueError("Live streams cannot be downloaded. You can download completed live streams tho")
 
             formats = info.get('formats', [])
             video_qualities = {}
@@ -152,12 +119,11 @@ def download_video_audio(url, save_path, cookie_file=None):
                 'outtmpl': os.path.join(save_path, f"{unique_filename('%(title)s')}.%(ext)s"),
                 'restrictfilenames': True,
                 'merge_output_format': 'mp4',
-                'progress_hooks': [create_progress_hook("Downloading Video and Audio")],
                 'cookiefile': cookie_file if cookie_file else None,
             }
             
             clear_screen()
-            print(Fore.CYAN + " Downloading Video+Audio... ".center(50, "="))
+            print(Fore.CYAN + " Downloading Video... ".center(50, "="))
             with YT.YoutubeDL(download_opts) as ydl:
                 ydl.download([url])
 
@@ -174,7 +140,8 @@ def download_audio_only(url, save_path, cookie_file=None):
     try:
         ydl_opts = {
             'quiet': True,
-            'no_warnings': True
+            'no_warnings': True,
+            'noprogress': False
         }
         
         if cookie_file:
@@ -229,7 +196,6 @@ def download_audio_only(url, save_path, cookie_file=None):
                     'preferredcodec': 'mp3',
                     'preferredquality': str(preferred_quality),           
                 }],
-                'progress_hooks': [create_progress_hook("Downloading Audio")],
                 'cookiefile': cookie_file if cookie_file else None,
             }
 
@@ -250,7 +216,8 @@ def download_subtitles(url, save_path, cookie_file=None) :
     try:
         ydl_opts = {
             'quiet': True,
-            'no_warnings': True    
+            'no_warnings': True,
+            'noprogress': False
         }
         
         if cookie_file:
@@ -354,7 +321,6 @@ def download_subtitles(url, save_path, cookie_file=None) :
                 'skip_download': True,  # Only download subtitles
                 'outtmpl': os.path.join(save_path, f"{unique_name}"), 
                 'restrictfilenames': True,
-                'progress_hooks': [create_progress_hook("Downloading Subtitles")],
                 'cookiefile': cookie_file if cookie_file else None,
             }
             
@@ -412,19 +378,33 @@ def convert_subtitles_to_srt(file_base, current_ext):
 def handle_error(e):
     print(Fore.LIGHTRED_EX + f"\nError: {str(e)}")
     err_msg = str(e).lower()
-    
-    if "unreachable" in err_msg or "connection" in err_msg:
+
+    if "unable to download webpage" in err_msg or "network" in err_msg or "connection" in err_msg:
         print(Fore.YELLOW + "Check your internet connection! (🌐)")
-    elif "age restricted" in err_msg:
-        print(Fore.LIGHTMAGENTA_EX + "Age-restricted content! Use cookies (🍪).")
-    elif "private" in err_msg:
-        print(Fore.YELLOW + "Video is private or requires login (🥷)")
-    elif "copyright" in err_msg:
-        print(Fore.YELLOW + "Content blocked due to copyright (©️)")
-    elif "ffmpeg" in err_msg:
-        print(Fore.YELLOW + "FFmpeg error. Ensure it's installed and in PATH")
-    elif "cookies" in err_msg:
+    
+    elif "age restricted" in err_msg or "sign in" in err_msg or "login required" in err_msg:
+        print(Fore.LIGHTMAGENTA_EX + "Age-restricted or login-required content! Use cookies (🍪).")
+    
+    elif "private" in err_msg or "unavailable" in err_msg or "not available" in err_msg:
+        print(Fore.YELLOW + "Video is private, unavailable, or requires login (🥷)")
+
+    elif "copyright" in err_msg or "blocked" in err_msg or "content not available" in err_msg:
+        print(Fore.YELLOW + "Content blocked due to copyright or regional restrictions (©️)")
+
+    elif "ffmpeg" in err_msg or "postprocessing" in err_msg:
+        print(Fore.YELLOW + "FFmpeg error. Ensure it's installed and in PATH.")
+    
+    elif "cookies" in err_msg or "authentication" in err_msg:
         print(Fore.YELLOW + "Cookies error. Ensure the cookies file is valid and up-to-date.")
-    else:
-        print(Fore.YELLOW + "Unknown error occurred. Please try again")
+
+    elif "live" in err_msg or "streaming" in err_msg:
+        print(Fore.YELLOW + "Live streams cannot be downloaded. You can download completed live streams though.")
+
+    elif "invalid url" in err_msg or "unsupported url" in err_msg:
+        print(Fore.YELLOW + "Invalid or unsupported URL. Please check the URL and try again.")
+ 
+    elif "format" in err_msg or "quality" in err_msg or "no video formats found" in err_msg:
+        print(Fore.YELLOW + "No downloadable formats found. The video may not be available in the requested format.")
         
+    else:
+        print(Fore.YELLOW + "An unknown error occurred. Please check the URL, your settings, and try again.")
