@@ -187,7 +187,7 @@ def download_audio_only(url, save_path, cookie_file=None):
 
             opts = {
                 'format': selected_format['format_id'],  
-                'outtmpl': unique_filename(save_path, '%(title)s.%(ext)s'),
+                'outtmpl': os.path.join(save_path, f"{unique_filename('%(title)s')}.%(ext)s"),
                 'restrictfilenames': True,
                 'postprocessors': [{
                     'key': 'FFmpegExtractAudio',
