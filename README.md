@@ -57,4 +57,4 @@ Refer to [Supported Sites](supportedsites.md) for a comprehensive lists of yt-dl
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the [MIT License](LICENSE)
