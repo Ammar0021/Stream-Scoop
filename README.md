@@ -1,6 +1,6 @@
 # Stream Scoop
 
-A simple yet powerful script that lets you download videos, audios, and subtitles from various websites
+A simple yet powerful script that lets you download videos, audios, and subtitles from a wide range of websites
 
 ## Requirements
 
@@ -56,4 +56,4 @@ Refer to [Supported Sites](supportedsites.md) for a comprehensive lists of yt-dl
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the [MIT License](LICENSE)
