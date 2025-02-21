@@ -7,8 +7,9 @@ from time import sleep
 from urllib.parse import urlparse
 import subprocess as sp
 import signal
+import yt_dlp as YT
 
-from download_utils import clear_screen, download_video_audio, download_audio_only, download_subtitles, handle_error, get_cookies
+from download_utils import clear_screen, download_video_audio, download_audio_only, download_subtitles, handle_error, get_cookies, download_video_audio_subtitles
 
 clr.init(autoreset=True)  
 
@@ -27,20 +28,22 @@ def check_ffmpeg():
         return False
     except FileNotFoundError:
         return False
+    
 def signal_handler(sig, frame):
     signal_name = signal.Signals(sig).name
-    print(f'{Fore.LIGHTMAGENTA_EX}\nReceived signal {signal_name} ({sig})')
+    print(f'{Fore.LIGHTMAGENTA_EX}\n\nReceived signal {signal_name} ({sig})')
     print(f'{Fore.LIGHTBLUE_EX}Interrupted at {frame.f_code.co_name}() in {frame.f_code.co_filename} at line {frame.f_lineno}')
     print(Fore.LIGHTYELLOW_EX + '\nExiting gracefully...')
     sys.exit(0)
+    
 def get_url():
     urls = []
     from colorama import Fore
-    print(f"{Fore.LIGHTGREEN_EX}Enter YouTube URLs (one per line). Type {Fore.WHITE}'done'{Fore.LIGHTGREEN_EX} or {Fore.WHITE}'d'{Fore.LIGHTGREEN_EX} to finish:")
+    print(f"{Fore.LIGHTGREEN_EX}Enter URLs (one per line). Type {Fore.WHITE}'done'{Fore.LIGHTGREEN_EX} or {Fore.WHITE}'d'{Fore.LIGHTGREEN_EX} to finish:")
    
     while True:
         try:
-            print(Fore.LIGHTRED_EX + "\nPaste YouTube URL: ", end='')
+            print(Fore.LIGHTRED_EX + "\nPaste URL: ", end='')
             url = input().strip()
             
             if url.lower() in ('done', 'd'):
@@ -48,28 +51,14 @@ def get_url():
                     raise ValueError(Fore.YELLOW + "No URLs entered\n")
                 break
             
-            validate_url(url)
             urls.append(url)
             print(Fore.LIGHTGREEN_EX + "URL added successfully!")
             
         except ValueError as e:
             print(Fore.LIGHTRED_EX + f"Error: {str(e)}")
-            print(Fore.BLUE + "Enter a valid YouTube URL!")       
-    return urls         
-def validate_url(url):
-    if url.lower() in ('done', 'd'):
-        return True
-    
-    parsed = urlparse(url)
-    valid_schemes = ["http", "https"]
-    valid_domains = ["youtube.com","www.youtube.com", "www.youtu.be", "youtu.be"]
-
-    if parsed.scheme not in valid_schemes:
-        raise ValueError(f"Invalid URL scheme. Expected {Fore.WHITE}'http' {Fore.LIGHTRED_EX}or {Fore.WHITE}'https'.")
-    
-    if parsed.netloc not in valid_domains:
-        raise ValueError(f"Invalid domain. Expected {Fore.WHITE}'youtube.com' {Fore.LIGHTRED_EX}or {Fore.WHITE}'youtu.be'.")
-    return True
+            print(Fore.BLUE + "Enter a valid URL!")       
+    return urls  
+       
 def get_save_path():
     print(Fore.LIGHTBLUE_EX + f"\nDefault download path: {DEFAULT_PATH}")
 
@@ -106,6 +95,7 @@ def get_save_path():
             print(Fore.YELLOW + "Please enter 'Y' for yes or 'n' for no.\n")
 
     return save_path
+
 def main():
     clear_screen()
     signal.signal(signal.SIGINT, signal_handler)
@@ -118,15 +108,15 @@ def main():
         sys.exit(1)
 
     clear_screen()
-    print(Fore.LIGHTRED_EX + " YouTube Downloader ".center(50, "=")); sleep(0.5)
-
-    for option in ["\n1. Download Video", "2. Download Audio Only", "3. Download Subtitles"]:
+    print(rand.choice(RANDOM_COLOURS) + " Stream Scooper ".center(50, "=")); sleep(0.5)
+    
+    for option in ["\n1. Download Video", "2. Download Audio Only", "3. Download Subtitles", "4. Download Video, Audio & Subtitles"]:
         print(rand.choice(RANDOM_COLOURS) + option); sleep(0.25)
   
     while True:
         try:
-            choice = input("\nEnter your choice (1-3): ").strip()
-            if choice in ('1', '2', '3'):
+            choice = input("\nEnter your choice (1-4): ").strip()
+            if choice in ('1', '2', '3', '4'):
                 cookie_file = get_cookies()
                 clear_screen()
                 urls = get_url()
@@ -142,13 +132,16 @@ def main():
                     elif choice == '3':
                         print(Fore.BLUE + "\nProcessing URL...")
                         download_subtitles(url, save_path, cookie_file)
+                    elif choice == '4':
+                        print(Fore.LIGHTRED_EX + "\nProcessing URL...")
+                        download_video_audio_subtitles(url, save_path, cookie_file)
                 break 
             else:
-                raise ValueError(Fore.LIGHTRED_EX + "Invalid choice! Enter 1, 2, or 3.")
+                raise ValueError(Fore.LIGHTRED_EX + "Invalid choice! Enter 1, 2, 3 or 4")
         
         except ValueError as e:
             print(Fore.RED + f"Error: {e}")
-            print(Fore.YELLOW + "Please enter a number between 1 and 3.\n")
+            print(Fore.YELLOW + "Please enter a number between 1 and 4.\n")
         except Exception as e:
             handle_error(e)
                 

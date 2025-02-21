@@ -51,14 +51,6 @@ def unique_filename(title):
 
 def download_video_audio(url, save_path, cookie_file=None):
     try:
-        resolution_names = {
-            "4320p": " (8K)",
-            "2160p": " (4K)",
-            "1440p": " (Quad HD)",
-            "1080p": " (Full HD)",
-            "720p": " (HD)"
-        }
-
         ydl_opts = {
             'quiet': True,
             'no_warnings': True,
@@ -93,8 +85,7 @@ def download_video_audio(url, save_path, cookie_file=None):
             clear_screen()
             print(Fore.CYAN + "Available Qualities:\n")
             for i, (res, details) in enumerate(sorted_qualities, 1):
-                res_name = resolution_names.get(res, "")
-                print(rand.choice(RANDOM_COLOURS) + f"{i}: {res}{res_name}")
+                print(rand.choice(RANDOM_COLOURS) + f"{i}: {res}")
 
             while True:
                 try:
@@ -370,6 +361,20 @@ def convert_subtitles_to_srt(file_base, current_ext):
     except Exception as e:
         print(Fore.RED + f"Error during conversion: {e}")
         
+def download_video_audio_subtitles(url, save_path, cookie_file=None):
+    try:
+        print(Fore.LIGHTCYAN_EX + " \nDownloading Video and Audio... ".center(50, "="))
+        download_video_audio(url, save_path, cookie_file)
+        
+        print(Fore.LIGHTCYAN_EX + " \n\nDownloading Subtitles... ".center(50, "="))
+        download_subtitles(url, save_path, cookie_file)
+        
+        print(Fore.GREEN + "\nAll downloads completed successfully!")
+        print(Fore.LIGHTMAGENTA_EX + "Your files have been saved in:" + Fore.LIGHTYELLOW_EX + f" {save_path}")
+        print(Fore.LIGHTBLUE_EX + f"\nYour Download has been Logged in 'download_history.txt'")
+    
+    except Exception as e:
+        handle_error(e)
 
 def handle_error(e):
     print(Fore.LIGHTRED_EX + f"\nError: {str(e)}")
