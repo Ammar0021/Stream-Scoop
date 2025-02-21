@@ -47,7 +47,7 @@ A simple yet powerful script that lets you download videos, audios, and subtitle
 
 ## Supported Sites
 
-Refer to [Supported Sites]() for a comprehensive lists of yt-dlp supported sites 
+Refer to [Supported Sites](supportedsites.md) for a comprehensive lists of yt-dlp supported sites 
 
 ## Cookies
 
