@@ -1,6 +1,6 @@
-# YouTube Downloader
+# Media Downloader
 
-A simple yet powerful script that lets you download YouTube videos, audios, and subtitles.
+A simple yet powerful script that lets you download videos, audios, and subtitles from various websites
 
 ## Requirements
 
@@ -13,10 +13,10 @@ A simple yet powerful script that lets you download YouTube videos, audios, and 
 
 1. Clone the repository:
     ```sh
-    git clone https://github.com/Ammar0021/Youtube-Downloader.git
+    git clone https://github.com/Ammar0021/Stream-Scoop.git
     ```
     ```sh
-    cd Youtube-Downloader
+    cd Stream-Scoop
     ```
 
 2. Install the required Python packages:
@@ -36,7 +36,7 @@ A simple yet powerful script that lets you download YouTube videos, audios, and 
     python main.py
     ```
 
-2. Follow the on-screen instructions to download videos, audios, or subtitles from YouTube.
+2. Follow the on-screen instructions to download videos, audios, or subtitles.
 
 ## Features
 
@@ -44,6 +44,10 @@ A simple yet powerful script that lets you download YouTube videos, audios, and 
 - **Download Audios**: Extract and download audio tracks in multiple bitrates and formats.
 - **Download Subtitles**:  Fetch and download subtitles in different languages, including automatic captions.
 - **Cookies Support**: Use cookies to download age-restricted or private videos. The script will prompt you to provide a cookies file if needed.
+
+## Supported Sites
+
+Refer to [Supported Sites]() for a comprehensive lists of yt-dlp supported sites 
 
 ## Cookies
 
