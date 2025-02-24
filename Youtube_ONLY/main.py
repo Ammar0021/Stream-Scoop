@@ -27,6 +27,7 @@ def check_ffmpeg():
         return False
     except FileNotFoundError:
         return False
+    
 def signal_handler(sig, frame):
     '''Handles Ctrl+C Gracefully'''
     signal_name = signal.Signals(sig).name
@@ -57,7 +58,8 @@ def get_url():
         except ValueError as e:
             print(Fore.LIGHTRED_EX + f"Error: {str(e)}")
             print(Fore.BLUE + "Enter a valid YouTube URL!")       
-    return urls         
+    return urls    
+     
 def validate_url(url):
     if url.lower() in ('done', 'd'):
         return True
@@ -72,6 +74,7 @@ def validate_url(url):
     if parsed.netloc not in valid_domains:
         raise ValueError(f"Invalid domain. Expected {Fore.WHITE}'youtube.com' {Fore.LIGHTRED_EX}or {Fore.WHITE}'youtu.be'.")
     return True
+
 def get_save_path():
     print(Fore.LIGHTBLUE_EX + f"\nDefault download path: {DEFAULT_PATH}")
 
@@ -108,6 +111,7 @@ def get_save_path():
             print(Fore.YELLOW + "Please enter 'Y' for yes or 'n' for no.\n")
 
     return save_path
+
 def main():
     clear_screen()
     signal.signal(signal.SIGINT, signal_handler)

@@ -195,6 +195,9 @@ def download_audio_only(url, save_path, cookie_file=None):
                     'preferredquality': str(preferred_quality),       
                 }],
                 'cookiefile': cookie_file if cookie_file else None,
+                'concurrent_fragment_downloads': 3,
+                'keepalive': True, 
+                'force_ip': '4',
             }
 
             clear_screen()
