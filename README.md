@@ -32,9 +32,14 @@ A simple yet powerful script that lets you download videos, audios, and subtitle
 ## Usage
 
 1. Run the script:
-    ```sh
-    python main.py
-    ```
+    - Windows:
+      ```sh
+      python main.py
+      ```
+    - MacOS/Linux:
+      ```sh
+      python3 main.py
+      ```
 
 2. Follow the on-screen instructions to download videos, audios, or subtitles.
 
