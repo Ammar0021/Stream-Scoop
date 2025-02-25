@@ -4,7 +4,6 @@ import colorama as clr
 from colorama import Fore
 import random as rand
 from time import sleep
-from urllib.parse import urlparse
 import subprocess as sp
 import signal
 import yt_dlp as YT
@@ -38,7 +37,6 @@ def signal_handler(sig, frame):
     
 def get_url():
     urls = []
-    from colorama import Fore
     print(f"{Fore.LIGHTGREEN_EX}Enter URLs (one per line). Type {Fore.WHITE}'done'{Fore.LIGHTGREEN_EX} or {Fore.WHITE}'d'{Fore.LIGHTGREEN_EX} to finish:")
    
     while True:
@@ -121,6 +119,31 @@ def main():
                 clear_screen()
                 urls = get_url()
                 save_path = get_save_path()
+                
+                expanded_urls = []
+                for url in urls:
+                    try:
+                        ydl_opts = {
+                            'quiet': True,
+                            'extract_flat': 'in_playlist',
+                            'cookiefile': cookie_file if cookie_file else None,
+                        }
+                        with YT.YoutubeDL(ydl_opts) as ydl:
+                            info = ydl.extract_info(url, download=False)
+                            if 'entries' in info:  # if playlist...
+                                print(Fore.LIGHTGREEN_EX + f"\nFound playlist with {len(info['entries'])} videos. Processing each...")
+                                for entry in info['entries']:
+                                    if 'url' in entry:
+                                        expanded_urls.append(entry['url'])
+                                    else:
+                                        print(Fore.YELLOW + f"Skipping invalid entry in playlist: {url}")
+                            else:  # Single video
+                                expanded_urls.append(url)
+                    except Exception as e:
+                        print(Fore.RED + f"Error processing {url}: {str(e)}")
+                        expanded_urls.append(url)  # Add original URL for fallback processing
+
+                urls = expanded_urls 
 
                 for url in urls:
                     if choice == '1':

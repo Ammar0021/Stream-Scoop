@@ -174,18 +174,15 @@ def download_audio_only(url, save_path, cookie_file=None):
             selected_format = audio_formats[choice_idx]
 
             bitrate = selected_format.get('bitrate', 0)
-            preferred_quality = max(0, min(int(bitrate // 32), 9)) if bitrate > 0 else 5
 
             opts = {
                 'format': selected_format['format_id'],  
-                'outtmpl': unique_filename(save_path, '%(title)s.%(ext)s'),
+                'outtmpl': os.path.join(save_path, f"{unique_filename('%(title)s')}.{selected_format['ext']}"),
                 'restrictfilenames': True,
-                'postprocessors': [{
-                    'key': 'FFmpegExtractAudio',
-                    'preferredcodec': 'mp3',
-                    'preferredquality': str(preferred_quality),       
-                }],
                 'cookiefile': cookie_file if cookie_file else None,
+                'concurrent_fragment_downloads': 2,
+                'keepalive': True, 
+                'force_ip': '4',
             }
 
             clear_screen()
@@ -325,19 +322,19 @@ def download_subtitles(url, save_path, cookie_file=None) :
             print(Fore.LIGHTMAGENTA_EX + "Your Subtitle has been saved in" + Fore.LIGHTYELLOW_EX + f" {save_path}")
             print(Fore.LIGHTBLUE_EX + f"\nYour Download has been Logged in 'download_history.txt")
             
-        while True:
-            try:
-                convert_to_srt = input(f"\n{Fore.YELLOW}Convert subtitles to .srt? ({Fore.WHITE}Y/n): ").strip().lower()
-                if convert_to_srt in ('', 'y', 'yes'):
-                    subtitle_base = os.path.join(save_path, f"{unique_name}.{selected_lang}") 
-                    convert_subtitles_to_srt(subtitle_base, selected_ext)  
-                    break
-                elif convert_to_srt in ('n', 'no'):
-                    break
-                else:
-                    raise ValueError("Invalid input.")
-            except ValueError as e:
-                print(e)
+            while True:
+                try:
+                    convert_to_srt = input(f"\n{Fore.YELLOW}Convert subtitles to .srt? ({Fore.WHITE}Y/n): ").strip().lower()
+                    if convert_to_srt in ('', 'y', 'yes'):
+                        subtitle_base = os.path.join(save_path, f"{unique_name}.{selected_lang}") 
+                        convert_subtitles_to_srt(subtitle_base, selected_ext)  
+                        break
+                    elif convert_to_srt in ('n', 'no'):
+                        break
+                    else:
+                        raise ValueError("Invalid input.")
+                except ValueError as e:
+                    print(e)
 
     except Exception as e:
         handle_error(e)
