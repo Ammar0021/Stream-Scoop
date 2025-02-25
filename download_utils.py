@@ -324,7 +324,7 @@ def download_subtitles(url, save_path, cookie_file=None) :
             
             while True:
                 try:
-                    convert_to_srt = input(f"\n{Fore.YELLOW}Convert subtitles to .srt? ({Fore.WHITE}Y/n): ").strip().lower()
+                    convert_to_srt = input(f"\n{Fore.LIGHTRED_EX}Convert subtitles to .srt? ({Fore.WHITE}Y/n): ").strip().lower()
                     if convert_to_srt in ('', 'y', 'yes'):
                         subtitle_base = os.path.join(save_path, f"{unique_name}.{selected_lang}") 
                         convert_subtitles_to_srt(subtitle_base, selected_ext)  

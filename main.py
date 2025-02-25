@@ -14,7 +14,7 @@ clr.init(autoreset=True)
 
 '''this AUTO creates a "Videos" folder in ur Desktop (if does not exist),
 You can Change the Current Default Path, by modifying the DEFAULT_PATH variable below'''
-DEFAULT_PATH = os.path.join(os.path.expanduser("~"), "Desktop", "Videos") # '~' is the user's home directory
+DEFAULT_PATH = os.path.join(os.path.expanduser("~"), "Desktop", "Scooped") # '~' is the user's home directory
 
 RANDOM_COLOURS = [Fore.RED, Fore.LIGHTRED_EX, Fore.GREEN, Fore.LIGHTGREEN_EX, Fore.YELLOW, Fore.LIGHTYELLOW_EX, Fore.BLUE, Fore.LIGHTBLUE_EX, Fore.MAGENTA, Fore.LIGHTMAGENTA_EX, Fore.CYAN, Fore.LIGHTCYAN_EX,]
 
