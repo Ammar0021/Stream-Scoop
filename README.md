@@ -11,7 +11,12 @@ A simple yet powerful script that lets you download videos, audios, and subtitle
 
 ## Installation
 
-1. Clone the repository:
+1. Ensure FFmpeg is installed and added to your system's PATH.
+    ```sh
+    MacOS/Linux: brew install ffmpeg 
+    Windows: choco install ffmpeg
+
+2. Clone the repository:
     ```sh
     git clone https://github.com/Ammar0021/Stream-Scoop.git
     ```
@@ -19,15 +24,10 @@ A simple yet powerful script that lets you download videos, audios, and subtitle
     cd Stream-Scoop
     ```
 
-2. Install the required Python packages:
+3. Install the required Python packages:
     ```sh
     pip install -r requirements.txt
     ```
-
-3. Ensure FFmpeg is installed and added to your system's PATH.
-    ```sh
-    MacOS/Linux: brew install ffmpeg 
-    Windows: choco install ffmpeg
 
 ## Usage
 
