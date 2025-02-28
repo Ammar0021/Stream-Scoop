@@ -37,6 +37,22 @@ def get_cookies():
             print(Fore.LIGHTRED_EX + f"Error: Cookie File {Fore.WHITE}'{cookie_file}'{Fore.LIGHTRED_EX} does not exist!")
 
 def log_download(url, save_path, download_type):
+    def ask_log():
+        while True:
+            try:
+                choice = input(Fore.LIGHTMAGENTA_EX + "\nLog this download? (Y/n): ").strip().lower()
+                if choice in ('', 'y', 'yes'):
+                    return True
+                elif choice in ('n', 'no'):
+                    return False
+                else:
+                    raise ValueError("Invalid input. Please enter 'Y' or 'n'.")
+            except ValueError as e:
+                print(Fore.RED + f"Error: {str(e)}")
+    
+    if not ask_log():
+        return False
+            
     log_file = os.path.join(save_path, "download_history.txt")
     os.makedirs(save_path, exist_ok=True)
     
@@ -44,6 +60,8 @@ def log_download(url, save_path, download_type):
     
     with open(log_file, "a") as f:
         f.write(f"{download_type} | {url} | {save_path} | {timestamp}\n\n")
+        
+    return True
 
 def unique_filename(title):
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -117,11 +135,12 @@ def download_video_audio(url, save_path, cookie_file=None):
             with YT.YoutubeDL(download_opts) as ydl:
                 ydl.download([url])
 
-            log_download(url, save_path, "Video")
+            logged = log_download(url, save_path, "Video")
             clear_screen()
             print(Fore.GREEN + "Download completed successfully!\n")
             print(Fore.LIGHTMAGENTA_EX + "Your video has been saved in:" + Fore.LIGHTYELLOW_EX + f" {save_path}")
-            print(Fore.LIGHTBLUE_EX + f"\nYour Download has been Logged in 'download_history.txt")
+            if logged:
+                print(Fore.LIGHTBLUE_EX + f"\nYour Download has been Logged in 'download_history.txt")
 
     except Exception as e:
         handle_error(e)
@@ -191,10 +210,11 @@ def download_audio_only(url, save_path, cookie_file=None):
             with YT.YoutubeDL(opts) as ydl:
                 ydl.download([url])
 
-            log_download(url, save_path, "Audio")
+            logged = log_download(url, save_path, "Audio")
             print(Fore.GREEN + "\nAudio download completed!")
             print(Fore.LIGHTMAGENTA_EX + "Your Audio has been saved in" + Fore.LIGHTYELLOW_EX + f" {save_path}")
-            print(Fore.LIGHTBLUE_EX + f"\nYour Download has been Logged in 'download_history.txt")
+            if logged:
+                print(Fore.LIGHTBLUE_EX + f"\nYour Download has been Logged in 'download_history.txt")
 
     except Exception as e:
         handle_error(e)
@@ -318,10 +338,11 @@ def download_subtitles(url, save_path, cookie_file=None) :
             with YT.YoutubeDL(opts) as ydl:
                 ydl.download([url])
             
-            log_download(url, save_path, "Subtitles")
+            logged = log_download(url, save_path, "Subtitles")
             print(Fore.GREEN + "\nSubtitles downloaded successfully!")
             print(Fore.LIGHTMAGENTA_EX + "Your Subtitle has been saved in" + Fore.LIGHTYELLOW_EX + f" {save_path}")
-            print(Fore.LIGHTBLUE_EX + f"\nYour Download has been Logged in 'download_history.txt")
+            if logged:
+                print(Fore.LIGHTBLUE_EX + f"\nYour Download has been Logged in 'download_history.txt")
             
             while True:
                 try:
@@ -369,7 +390,6 @@ def download_video_audio_subtitles(url, save_path, cookie_file=None):
         
         print(Fore.GREEN + "\nAll downloads completed successfully!")
         print(Fore.LIGHTMAGENTA_EX + "Your files have been saved in:" + Fore.LIGHTYELLOW_EX + f" {save_path}")
-        print(Fore.LIGHTBLUE_EX + f"\nYour Download has been Logged in 'download_history.txt'")
     
     except Exception as e:
         handle_error(e)
