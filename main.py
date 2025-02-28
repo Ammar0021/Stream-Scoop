@@ -2,21 +2,19 @@ import os
 import sys
 import colorama as clr
 from colorama import Fore
-import random as rand
 from time import sleep
 import subprocess as sp
 import signal
 import yt_dlp as YT
 
 from download_utils import clear_screen, download_video_audio, download_audio_only, download_subtitles, handle_error, get_cookies, download_video_audio_subtitles
+from colours import *
 
 clr.init(autoreset=True)  
 
 '''this AUTO creates a "Scooped" folder on ur Desktop (if does not exist),
 You can Change the Current Default Path, by modifying the DEFAULT_PATH variable below'''
 DEFAULT_PATH = os.path.join(os.path.expanduser("~"), "Desktop", "Scooped") # '~' is the user's home directory
-
-RANDOM_COLOURS = [Fore.RED, Fore.LIGHTRED_EX, Fore.GREEN, Fore.LIGHTGREEN_EX, Fore.YELLOW, Fore.LIGHTYELLOW_EX, Fore.BLUE, Fore.LIGHTBLUE_EX, Fore.MAGENTA, Fore.LIGHTMAGENTA_EX, Fore.CYAN, Fore.LIGHTCYAN_EX,]
 
 def check_ffmpeg():
     try:
@@ -109,10 +107,10 @@ def main():
         sys.exit(1)
 
     clear_screen()
-    print(rand.choice(RANDOM_COLOURS) + " Stream Scooper ".center(50, "=")); sleep(0.5)
+    print(get_next_colour() + " Stream Scooper ".center(50, "=")); sleep(0.5)
     
     for option in ["\n1. Download Video", "2. Download Audio Only", "3. Download Subtitles", "4. Download Video, Audio & Subtitles"]:
-        print(rand.choice(RANDOM_COLOURS) + option); sleep(0.25)
+        print(get_next_colour() + option); sleep(0.25)
   
     while True:
         try:
@@ -125,6 +123,7 @@ def main():
                 
                 expanded_urls = []
                 for url in urls:
+                    print(Fore.LIGHTBLACK_EX + "\nProcessing URL...")
                     try:
                         '''Playlist Handling'''
                         ydl_opts = {
@@ -148,19 +147,18 @@ def main():
                         expanded_urls.append(url)  # Add original URL for fallback processing
 
                 urls = expanded_urls 
-
                 for url in urls:
                     if choice == '1':
-                        print(Fore.BLUE + "\nProcessing URL...")
+                        #print(Fore.BLUE + "\nProcessing URL...")
                         download_video_audio(url, save_path, cookie_file)    
                     elif choice == '2':
-                        print(Fore.BLUE + "\nProcessing URL...")
+                        #print(Fore.BLUE + "\nProcessing URL...")
                         download_audio_only(url, save_path, cookie_file)
                     elif choice == '3':
-                        print(Fore.BLUE + "\nProcessing URL...")
+                        #print(Fore.BLUE + "\nProcessing URL...")
                         download_subtitles(url, save_path, cookie_file)
                     elif choice == '4':
-                        print(Fore.LIGHTRED_EX + "\nProcessing URL...")
+                        #print(Fore.LIGHTRED_EX + "\nProcessing URL...")
                         download_video_audio_subtitles(url, save_path, cookie_file)
                 break 
             else:

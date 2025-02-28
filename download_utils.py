@@ -4,10 +4,9 @@ import sys
 import yt_dlp as YT
 import colorama as clr
 from colorama import Fore
-import random as rand
 from datetime import datetime
 
-RANDOM_COLOURS = [Fore.RED, Fore.LIGHTRED_EX, Fore.GREEN, Fore.LIGHTGREEN_EX, Fore.YELLOW, Fore.LIGHTYELLOW_EX, Fore.BLUE, Fore.LIGHTBLUE_EX, Fore.MAGENTA, Fore.LIGHTMAGENTA_EX, Fore.CYAN, Fore.LIGHTCYAN_EX,]
+from colours import *
 
 clr.init(autoreset=True)
 
@@ -80,20 +79,38 @@ def download_video_audio(url, save_path, cookie_file=None):
 
         with YT.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
-
+            
             formats = info.get('formats', [])
             video_qualities = {}
 
             for f in formats:
-                if f.get('vcodec') == 'none' or f.get('format_note') == 'storyboard' or f.get('quality') == -1:
+                if f.get('vcodec') == 'none' or f.get('format_note') == 'storyboard':
                     continue
 
-                res = f"{f.get('height', '?')}p"
-                tbr = f.get('tbr', 0) or 0 
-                if res not in video_qualities or (f.get('tbr') is not None and f.get('tbr', 0) > video_qualities[res]['tbr']):
+                # Get height with fallbacks
+                height = f.get('height')
+                format_note = str(f.get('format_note', '')).lower()
+                
+                # Try to extract resolution from format_note if height is missing
+                if not height and format_note:
+                    if 'p' in format_note:
+                        height = int(''.join(filter(str.isdigit, format_note)))
+                    elif 'x' in format_note:  # For WxH format
+                        height = int(format_note.split('x')[-1])
+
+                # Skip formats with undetermined resolution
+                if not height or not isinstance(height, int):
+                    continue
+
+                # Create resolution label
+                res = f"{height}p"
+                tbr = f.get('tbr', 0) or 0
+                
+                # Keep best quality per resolution
+                if res not in video_qualities or tbr > video_qualities[res]['tbr']:
                     video_qualities[res] = {
                         'format_id': f['format_id'],
-                        'height': f.get('height', 0),
+                        'height': height,
                         'tbr': tbr,
                     }
 
@@ -104,7 +121,7 @@ def download_video_audio(url, save_path, cookie_file=None):
             clear_screen()
             print(Fore.CYAN + "Available Qualities:\n")
             for i, (res, details) in enumerate(sorted_qualities, 1):
-                print(rand.choice(RANDOM_COLOURS) + f"{i}: {res}")
+                print(get_next_colour() + f"{i}: {res}")
 
             while True:
                 try:
@@ -177,7 +194,7 @@ def download_audio_only(url, save_path, cookie_file=None):
             clear_screen()
             print(Fore.CYAN + "Available Audio Qualities:\n")
             for i, fmt in enumerate(audio_formats, 1):
-                print(rand.choice(RANDOM_COLOURS) + f"{i}: {fmt['bitrate']}kbps ({fmt['ext']})")
+                print(get_next_colour() + f"{i}: {fmt['bitrate']}kbps ({fmt['ext']})")
 
             while True:
                 try:
@@ -285,7 +302,7 @@ def download_subtitles(url, save_path, cookie_file=None) :
                 for i in range(start, end):
                     sub = all_subtitles[i]
                     sub_type = "Auto" if sub['is_auto'] else "Manual"
-                    print(rand.choice(RANDOM_COLOURS) + f"{i + 1}: {sub['lang'].upper()} ({sub_type}) - {sub['ext'].upper()}")
+                    print(get_next_colour() + f"{i + 1}: {sub['lang'].upper()} ({sub_type}) - {sub['ext'].upper()}")
                 
                 sys.stdout.flush() 
 
