@@ -12,7 +12,7 @@ from download_utils import clear_screen, download_video_audio, download_audio_on
 
 clr.init(autoreset=True)  
 
-'''this AUTO creates a "Videos" folder in ur Desktop (if does not exist),
+'''this AUTO creates a "Scooped" folder on ur Desktop (if does not exist),
 You can Change the Current Default Path, by modifying the DEFAULT_PATH variable below'''
 DEFAULT_PATH = os.path.join(os.path.expanduser("~"), "Desktop", "Scooped") # '~' is the user's home directory
 
@@ -20,14 +20,15 @@ RANDOM_COLOURS = [Fore.RED, Fore.LIGHTRED_EX, Fore.GREEN, Fore.LIGHTGREEN_EX, Fo
 
 def check_ffmpeg():
     try:
-        print(Fore.LIGHTCYAN_EX + "Checking if FFmpeg is Installed...\n"); sleep(1.1)
+        print(Fore.LIGHTCYAN_EX + "Checking if FFmpeg is Installed...\n"); sleep(0.6969)
         sp.run(['ffmpeg', '-version'], stdout=sp.PIPE, stderr=sp.PIPE, check=True)
         return True
     except sp.CalledProcessError:
         return False
     except FileNotFoundError:
         return False
-    
+
+'''Handles Ctrl + C Gracefully'''    
 def signal_handler(sig, frame):
     signal_name = signal.Signals(sig).name
     print(f'{Fore.LIGHTMAGENTA_EX}\n\nReceived signal {signal_name} ({sig})')
@@ -49,13 +50,16 @@ def get_url():
                     raise ValueError(Fore.YELLOW + "No URLs entered\n")
                 break
             
-            urls.append(url)
-            print(Fore.LIGHTGREEN_EX + "URL added successfully!")
+            if url:  # Check if the URL is not empty
+                urls.append(url)
+                print(Fore.LIGHTGREEN_EX + "URL added successfully!")
+            else:
+                print(Fore.LIGHTRED_EX + "Error: URL cannot be empty. Please enter a valid URL.")
             
         except ValueError as e:
             print(Fore.LIGHTRED_EX + f"Error: {str(e)}")
             print(Fore.BLUE + "Enter a valid URL!")       
-    return urls  
+    return urls
        
 def get_save_path():
     print(Fore.LIGHTBLUE_EX + f"\nDefault download path: {DEFAULT_PATH}")
@@ -63,7 +67,6 @@ def get_save_path():
     while True:
         try:
             choice = input("Use default path? (Y/n): ").strip().lower()
-            
             if choice in ('', 'y', 'yes'):
                 save_path = DEFAULT_PATH
                 break  
@@ -123,6 +126,7 @@ def main():
                 expanded_urls = []
                 for url in urls:
                     try:
+                        '''Playlist Handling'''
                         ydl_opts = {
                             'quiet': True,
                             'extract_flat': 'in_playlist',

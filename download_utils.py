@@ -71,11 +71,12 @@ def download_video_audio(url, save_path, cookie_file=None):
                     continue
 
                 res = f"{f.get('height', '?')}p"
-                if res not in video_qualities or f.get('tbr', 0) > video_qualities[res]['tbr']:
+                tbr = f.get('tbr', 0) or 0 
+                if res not in video_qualities or (f.get('tbr') is not None and f.get('tbr', 0) > video_qualities[res]['tbr']):
                     video_qualities[res] = {
                         'format_id': f['format_id'],
                         'height': f.get('height', 0),
-                        'tbr': f.get('tbr', 0)
+                        'tbr': tbr,
                     }
 
             sorted_qualities = sorted(video_qualities.items(), key=lambda x: -x[1]['height'])
