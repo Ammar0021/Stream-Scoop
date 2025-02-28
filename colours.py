@@ -12,7 +12,6 @@ DISTINCT_COLOURS = [
     Fore.CYAN,
 ]
 
-# Define color variants (light versions of base colors)
 COLOUR_VARIANTS = {
     Fore.RED: [Fore.LIGHTRED_EX],
     Fore.GREEN: [Fore.LIGHTGREEN_EX],
