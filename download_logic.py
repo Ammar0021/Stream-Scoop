@@ -4,7 +4,8 @@ import sys
 import yt_dlp as YT
 import colorama as clr
 from colorama import Fore
-from datetime import datetime
+import subprocess as sp
+import readchar
 
 from utilities import clear_screen, log_download, unique_filename, handle_error
 from colours import *
@@ -24,38 +25,20 @@ def download_video_audio(url, save_path, cookie_file=None):
 
         with YT.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
-            
+
             formats = info.get('formats', [])
             video_qualities = {}
 
             for f in formats:
-                if f.get('vcodec') == 'none' or f.get('format_note') == 'storyboard':
+                if f.get('vcodec') == 'none' or f.get('format_note') == 'storyboard' or f.get('quality') == -1:
                     continue
 
-                # Get height with fallbacks
-                height = f.get('height')
-                format_note = str(f.get('format_note', '')).lower()
-                
-                # Try to extract resolution from format_note if height is missing
-                if not height and format_note:
-                    if 'p' in format_note:
-                        height = int(''.join(filter(str.isdigit, format_note)))
-                    elif 'x' in format_note:  # For WxH format
-                        height = int(format_note.split('x')[-1])
-
-                # Skip formats with undetermined resolution
-                if not height or not isinstance(height, int):
-                    continue
-
-                # Create resolution label
-                res = f"{height}p"
-                tbr = f.get('tbr', 0) or 0
-                
-                # Keep best quality per resolution
-                if res not in video_qualities or tbr > video_qualities[res]['tbr']:
+                res = f"{f.get('height', '?')}p"
+                tbr = f.get('tbr', 0) or 0 
+                if res not in video_qualities or (f.get('tbr') is not None and f.get('tbr', 0) > video_qualities[res]['tbr']):
                     video_qualities[res] = {
                         'format_id': f['format_id'],
-                        'height': height,
+                        'height': f.get('height', 0),
                         'tbr': tbr,
                     }
 
@@ -252,32 +235,44 @@ def download_subtitles(url, save_path, cookie_file=None) :
                 sys.stdout.flush() 
 
             current_page = 0
+            
             while True:
                 display_page(current_page)
+                print(Fore.YELLOW + "\nNavigate with " + 
+                      Fore.CYAN + "←/A" + Fore.YELLOW +
+                      Fore.CYAN + " →/D" + Fore.YELLOW + " | Select " +
+                      Fore.CYAN + "number" + Fore.YELLOW + " to choose")
+                
                 try:
-                    choice = input(f"\nChoose subtitle (number) or navigate ({Fore.YELLOW}n{Fore.WHITE}: next, {Fore.YELLOW}p{Fore.WHITE}: previous): ").strip().lower()
-
-                    if choice == 'n': 
-                        if current_page < total_pages - 1:
-                            current_page += 1
-                        else:
-                            current_page = 0  # Wrap around to the first page if on the last page
-
-                    elif choice == 'p':  
-                        if current_page > 0:
-                            current_page -= 1
-                        else:
-                            current_page = total_pages - 1  # Wrap around to the last page if on the first page
-
+                    key = readchar.readkey()
+                    
+                    if key == readchar.key.LEFT:
+                        key = 'a'
+                    elif key == readchar.key.RIGHT:
+                        key = 'd'
                     else:
-                        choice_idx = int(choice) - 1
+                        key = key.lower()
+                    
+                    if key in ('a', 'd'):
+                        # Wrap-around page navigation
+                        if key == 'a':
+                            current_page = current_page - 1 if current_page > 0 else total_pages - 1
+                        else:
+                            current_page = current_page + 1 if current_page < total_pages - 1 else 0
+                        continue
+                    
+                    if key.isdigit():
+                        choice_idx = int(key) - 1
                         if 0 <= choice_idx < len(all_subtitles):
                             selected = all_subtitles[choice_idx]
                             break
                         else:
-                            print(Fore.RED + f"Error: Invalid selection. Please choose a number between 1 and {len(all_subtitles)}.")
-                except ValueError:
-                    print(Fore.RED + "Error: Invalid input. Please enter a valid number or navigation command.")
+                            print(Fore.RED + f"Error: Invalid selection. Choose 1-{len(all_subtitles)}")
+                    else:
+                        print(Fore.RED + "Invalid input. Use arrows/A/D or numbers")
+
+                except Exception as e:
+                    print(Fore.RED + f"Error: {str(e)}")
 
             selected_ext = selected['ext']
             selected_lang = selected['lang']
@@ -328,19 +323,44 @@ def convert_subtitles_to_srt(file_base, current_ext):
         subtitle_file = f"{file_base}.{current_ext}"
         srt_file = f"{file_base}.srt"
 
-        print(Fore.YELLOW + f"\nDEBUG: Checking for file -> {subtitle_file}");sleep(2)  # Debug line
+        print(Fore.YELLOW + f"\nDEBUG: Checking for file -> {subtitle_file}")
+        sleep(2)  # Debug line
 
-        if current_ext != 'srt':
-            if os.path.exists(subtitle_file):
-                os.rename(subtitle_file, srt_file)
-                print(Fore.GREEN + f"\nConverted to .srt: {srt_file}")
-            else:
-                print(Fore.RED + f"Error: File not found: {subtitle_file}")
-        else:
+        if current_ext == 'srt':
             print(Fore.YELLOW + "Subtitles are already in .srt format.")
+            return
 
+        # Uses ffmpeg to convert subtitle
+        command = [
+            'ffmpeg',
+            '-i', subtitle_file,
+            '-c:s', 'srt',  # Explicitly set subtitle codec to srt
+            srt_file
+        ]
+        
+        result = sp.run(
+            command, 
+            check= True, 
+            stdout= sp.PIPE, 
+            stderr= sp.PIPE, 
+            text= True
+        )
+
+        # Remove original file after successful conversion
+        if os.path.exists(subtitle_file):
+            os.remove(subtitle_file)
+        
+        print(Fore.GREEN + f"\nConverted to .srt: {srt_file}")
+
+    except sp.CalledProcessError as e:
+        print(Fore.RED + f"FFmpeg Error: {e.stderr}")
+        # Cleanup failed output
+        if os.path.exists(srt_file):
+            os.remove(srt_file)
     except Exception as e:
-        print(Fore.RED + f"Error during conversion: {e}")
+        print(Fore.RED + f"General Error: {str(e)}")
+        if os.path.exists(srt_file):
+            os.remove(srt_file)
         
 def download_video_audio_subtitles(url, save_path, cookie_file=None):
     try:
