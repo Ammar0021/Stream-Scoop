@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 import subprocess as sp
 import signal
 
-from download_utils import clear_screen, download_video_audio, download_audio_only, download_subtitles, handle_error, get_cookies, download_video_audio_subtitles
+from download_logic import clear_screen, download_video_audio, download_audio_only, download_subtitles, handle_error, get_cookies, download_video_audio_subtitles
 
 clr.init(autoreset=True)  
 

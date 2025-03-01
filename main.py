@@ -7,7 +7,8 @@ import subprocess as sp
 import signal
 import yt_dlp as YT
 
-from download_utils import clear_screen, download_video_audio, download_audio_only, download_subtitles, handle_error, get_cookies, download_video_audio_subtitles
+from download_logic import  download_video_audio, download_audio_only, download_subtitles, download_video_audio_subtitles
+from utilities import clear_screen, handle_error, get_cookies
 from colours import *
 
 clr.init(autoreset=True)  
