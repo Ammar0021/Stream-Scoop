@@ -110,7 +110,7 @@ def main():
     clear_screen()
     print(get_next_colour() + " Stream Scooper ".center(50, "=")); sleep(0.5)
     
-    for option in ["\n1. Download Video", "2. Download Audio Only", "3. Download Subtitles", "4. Download Video, Audio & Subtitles"]:
+    for option in ["\n1. Download Video", "2. Download Audio Only", "3. Download Subtitles", "4. Download Video & Subtitles"]:
         print(get_next_colour() + option); sleep(0.25)
   
     while True:
