@@ -1835,3 +1835,4 @@ The only reliable way to check if a site is supported is to try it.
  - **zoom**
  - **Zype**
  - **generic**: Generic downloader that works on some sites
+
