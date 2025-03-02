@@ -6,14 +6,18 @@ import colorama as clr
 from colorama import Fore
 import subprocess as sp
 import readchar
+from time import perf_counter
 
-from utilities import clear_screen, log_download, unique_filename, handle_error
+from utilities import clear_screen, log_download, unique_filename, handle_error, create_progress_hook
 from colours import *
 
 clr.init(autoreset=True)
 
+
 def download_video_audio(url, save_path, cookie_file=None, use_aria2c=False):
     try:
+        progress_hook, get_duration = create_progress_hook()
+        
         ydl_opts = {
             'quiet': True,
             'no_warnings': True,
@@ -72,16 +76,30 @@ def download_video_audio(url, save_path, cookie_file=None, use_aria2c=False):
                 'keepalive': True, 
                 'force_ip': '4',
                 'cookiefile': cookie_file if cookie_file else None,
+                'progress_hooks': [progress_hook],
             }
             if use_aria2c:
                 download_opts['external_downloader'] = 'aria2c'
+                download_opts['external_downloader_args'] = [
+                    '-x8',   # Max 16 connections per server
+                    '-s8',   # Split into 16 pieces
+                    '-j8',   # 16 concurrent downloads per file
+                    '--min-split-size=4M',  # 4Mb minimum split size
+                    '--file-allocation=none',  # Faster start time, by avoiding allocation
+                    '--optimize-concurrent-downloads',  # Optimize for parallel downloads
+                    '--continue=true',  # Continue downloads if interrupted
+                    '--check-certificate=false',
+                ]
             
             clear_screen()
             print(Fore.CYAN + " Downloading Video... ".center(50, "="))
+            start_time = perf_counter()
             with YT.YoutubeDL(download_opts) as ydl:
                 ydl.download([url])
+            end_time = perf_counter()
 
-            logged = log_download(url, save_path, "Video")
+            duration = get_duration() if not use_aria2c else end_time - start_time
+            logged = log_download(url, save_path, "Video", duration)
             clear_screen()
             print(Fore.GREEN + "Download completed successfully!\n")
             print(Fore.LIGHTMAGENTA_EX + "Your video has been saved in:" + Fore.LIGHTYELLOW_EX + f" {save_path}")
@@ -93,6 +111,7 @@ def download_video_audio(url, save_path, cookie_file=None, use_aria2c=False):
 
 def download_audio_only(url, save_path, cookie_file=None, use_aria2c=False):
     try:
+        progress_hook, get_duration = create_progress_hook()
         ydl_opts = {
             'quiet': True,
             'no_warnings': True,
@@ -148,16 +167,27 @@ def download_audio_only(url, save_path, cookie_file=None, use_aria2c=False):
                 'cookiefile': cookie_file if cookie_file else None,
                 'keepalive': True, 
                 'force_ip': '4',
+                'progress_hooks': [progress_hook],
             }
             if use_aria2c:
                 download_opts['external_downloader'] = 'aria2c'
+                download_opts['external_downloader_args'] = [
+                    '-x8',   # Max 8 connections per server (reduced for smaller files)
+                    '-s8',   # Split into 8 pieces (reduced for smaller files)
+                    '-j8',   # 8 concurrent downloads per file (reduced for smaller files)
+                    '--min-split-size=1M',  # 1MB minimum split size (better for smaller files)
+                    '--file-allocation=none',  # Faster start time, by avoiding allocation
+                    '--optimize-concurrent-downloads',  # Optimize for parallel downloads
+                    '--continue=true',  # Continue downloads if interrupted
+                ]
 
             clear_screen()
             print(Fore.CYAN + f" Downloading Audio ({selected_format['bitrate']}kbps)... ".center(50, "="))
             with YT.YoutubeDL(download_opts) as ydl:
                 ydl.download([url])
 
-            logged = log_download(url, save_path, "Audio")
+            duration = get_duration()
+            logged = log_download(url, save_path, "Audio", duration)
             print(Fore.GREEN + "\nAudio download completed!")
             print(Fore.LIGHTMAGENTA_EX + "Your Audio has been saved in" + Fore.LIGHTYELLOW_EX + f" {save_path}")
             if logged:
@@ -168,6 +198,7 @@ def download_audio_only(url, save_path, cookie_file=None, use_aria2c=False):
 
 def download_subtitles(url, save_path, cookie_file=None) :
     try:
+        progress_hook, get_duration = create_progress_hook()
         ydl_opts = {
             'quiet': True,
             'no_warnings': True,
@@ -288,6 +319,7 @@ def download_subtitles(url, save_path, cookie_file=None) :
                 'outtmpl': os.path.join(save_path, f"{unique_name}"), 
                 'restrictfilenames': True,
                 'cookiefile': cookie_file if cookie_file else None,
+                'progress_hooks': [progress_hook],
             }
             
             clear_screen()
@@ -297,7 +329,8 @@ def download_subtitles(url, save_path, cookie_file=None) :
             with YT.YoutubeDL(download_opts) as ydl:
                 ydl.download([url])
             
-            logged = log_download(url, save_path, "Subtitles")
+            duration = get_duration()
+            logged = log_download(url, save_path, "Subtitles", duration)
             print(Fore.GREEN + "\nSubtitles downloaded successfully!")
             print(Fore.LIGHTMAGENTA_EX + "Your Subtitle has been saved in" + Fore.LIGHTYELLOW_EX + f" {save_path}")
             if logged:
@@ -326,7 +359,7 @@ def convert_subtitles_to_srt(file_base, current_ext):
         srt_file = f"{file_base}.srt"
 
         print(Fore.YELLOW + f"\nDEBUG: Checking for file -> {subtitle_file}")
-        sleep(2)  # Debug line
+        sleep(1)  # Debug line
 
         if current_ext == 'srt':
             print(Fore.YELLOW + "Subtitles are already in .srt format.")
