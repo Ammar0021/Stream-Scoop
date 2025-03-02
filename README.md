@@ -1,6 +1,6 @@
 # Stream Scoop
 
-A Sleek Script to Grab Videos, Audios, and Subtitles from most sites.
+A Sleek Script for Grabbing Videos, Audios, and Subtitles from most sites
 
 ## Requirements
 
