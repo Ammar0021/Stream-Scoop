@@ -1,6 +1,6 @@
 # Stream Scoop
 
-A simple yet powerful script that lets you download videos, audios, and subtitles from a wide range of websites
+A sleek script to grab videos, audios, and subtitles from most sites.
 
 ## Requirements
 
