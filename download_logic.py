@@ -12,7 +12,7 @@ from colours import *
 
 clr.init(autoreset=True)
 
-def download_video_audio(url, save_path, cookie_file=None):
+def download_video_audio(url, save_path, cookie_file=None, use_aria2c=False):
     try:
         ydl_opts = {
             'quiet': True,
@@ -69,11 +69,12 @@ def download_video_audio(url, save_path, cookie_file=None):
                 'outtmpl': os.path.join(save_path, f"{unique_filename('%(title)s')}.%(ext)s"),
                 'restrictfilenames': True,
                 'merge_output_format': 'mp4',
-                'concurrent_fragment_downloads': 3,
                 'keepalive': True, 
                 'force_ip': '4',
                 'cookiefile': cookie_file if cookie_file else None,
             }
+            if use_aria2c:
+                download_opts['external_downloader'] = 'aria2c'
             
             clear_screen()
             print(Fore.CYAN + " Downloading Video... ".center(50, "="))
@@ -90,7 +91,7 @@ def download_video_audio(url, save_path, cookie_file=None):
     except Exception as e:
         handle_error(e)
 
-def download_audio_only(url, save_path, cookie_file=None):
+def download_audio_only(url, save_path, cookie_file=None, use_aria2c=False):
     try:
         ydl_opts = {
             'quiet': True,
@@ -140,19 +141,20 @@ def download_audio_only(url, save_path, cookie_file=None):
 
             bitrate = selected_format.get('bitrate', 0)
 
-            opts = {
+            download_opts = {
                 'format': selected_format['format_id'],  
                 'outtmpl': os.path.join(save_path, f"{unique_filename('%(title)s')}.{selected_format['ext']}"),
                 'restrictfilenames': True,
                 'cookiefile': cookie_file if cookie_file else None,
-                'concurrent_fragment_downloads': 2,
                 'keepalive': True, 
                 'force_ip': '4',
             }
+            if use_aria2c:
+                download_opts['external_downloader'] = 'aria2c'
 
             clear_screen()
             print(Fore.CYAN + f" Downloading Audio ({selected_format['bitrate']}kbps)... ".center(50, "="))
-            with YT.YoutubeDL(opts) as ydl:
+            with YT.YoutubeDL(download_opts) as ydl:
                 ydl.download([url])
 
             logged = log_download(url, save_path, "Audio")
@@ -277,7 +279,7 @@ def download_subtitles(url, save_path, cookie_file=None) :
             selected_ext = selected['ext']
             selected_lang = selected['lang']
             
-            opts = {
+            download_opts = {
                 'writesubtitles': not selected['is_auto'],
                 'writeautomaticsub': selected['is_auto'],
                 'subtitleslangs': [selected['lang']],
@@ -292,7 +294,7 @@ def download_subtitles(url, save_path, cookie_file=None) :
             title = f" Downloading {selected['lang'].upper()} Subtitles ({selected['ext'].upper()})... "
             print(Fore.CYAN + title.center(50, "="))
             
-            with YT.YoutubeDL(opts) as ydl:
+            with YT.YoutubeDL(download_opts) as ydl:
                 ydl.download([url])
             
             logged = log_download(url, save_path, "Subtitles")
@@ -355,7 +357,7 @@ def convert_subtitles_to_srt(file_base, current_ext):
         if os.path.exists(srt_file):
             os.remove(srt_file)
         
-def download_video_audio_subtitles(url, save_path, cookie_file=None):
+def download_video_audio_subtitles(url, save_path, cookie_file=None, use_aria2c=False):
     try:
         print(Fore.LIGHTCYAN_EX + " \nDownloading Video and Audio... ".center(50, "="))
         download_video_audio(url, save_path, cookie_file)
