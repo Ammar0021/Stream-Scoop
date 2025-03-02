@@ -17,17 +17,24 @@ clr.init(autoreset=True)
 You can Change the Current Default Path, by modifying the DEFAULT_PATH variable below'''
 DEFAULT_PATH = os.path.join(os.path.expanduser("~"), "Desktop", "Scooped") # '~' is the user's home directory
 
-def check_ffmpeg():
+def check_dependencies():
+    print(get_next_colour() + "Checking Dependencies...\n") ;sleep(0.6969)
+    
     try:
-        print(Fore.LIGHTCYAN_EX + "Checking if FFmpeg is Installed...\n"); sleep(0.6969)
         sp.run(['ffmpeg', '-version'], stdout=sp.PIPE, stderr=sp.PIPE, check=True)
-        return True
-    except sp.CalledProcessError:
-        return False
-    except FileNotFoundError:
-        return False
+        ffmpeg_installed = True
+    except (sp.CalledProcessError, FileNotFoundError):
+        ffmpeg_installed = False
+    
+    try:
+        sp.run(['faria2c', '--version'], stdout=sp.PIPE, stderr=sp.PIPE, check=True)
+        aria2c_installed = True
+    except (sp.CalledProcessError, FileNotFoundError):
+        aria2c_installed = False
 
-'''Handles Ctrl + C Gracefully'''    
+    return ffmpeg_installed, aria2c_installed
+
+'''Handles Ctrl + C (Keyboard Interrupt) Gracefully'''    
 def signal_handler(sig, frame):
     signal_name = signal.Signals(sig).name
     print(f'{Fore.LIGHTMAGENTA_EX}\n\nReceived signal {signal_name} ({sig})')
@@ -99,13 +106,30 @@ def get_save_path():
 def main():
     clear_screen()
     signal.signal(signal.SIGINT, signal_handler)
+    ffmpeg_installed, aria2c_installed = check_dependencies()
     
-    if not check_ffmpeg():
-        clear_screen()
-        print(Fore.RED + "FFmpeg is not installed or not in PATH!")
-        print(Fore.LIGHTBLUE_EX + "FFmpeg is needed to Download Videos"); sleep(1)
-        print(Fore.LIGHTYELLOW_EX + "\nDownload FFmpeg from: " + Fore.LIGHTWHITE_EX + "https://ffmpeg.org/download.html\n")
+    print(f"FFmpeg Installed: {Fore.LIGHTGREEN_EX}{ffmpeg_installed}" if ffmpeg_installed else f"FFmpeg Installed: {Fore.LIGHTRED_EX}{ffmpeg_installed}")
+    print(f"Aria2 Installed: {Fore.LIGHTGREEN_EX}{aria2c_installed}" if aria2c_installed else f"Aria2 Installed: {Fore.LIGHTRED_EX}{aria2c_installed}") ;sleep(1)
+    
+    if not ffmpeg_installed:
+        print(Fore.RED + "\nFFmpeg is not installed or not in PATH!")
+        print(Fore.LIGHTBLUE_EX + "FFmpeg is needed to Download Videos") ;sleep(1)
+        print(Fore.LIGHTYELLOW_EX + "\nDownload FFmpeg Manually From: " + Fore.LIGHTWHITE_EX + "https://ffmpeg.org/download.html\n")
         sys.exit(1)
+        
+    if not aria2c_installed:
+        print(f"{Fore.LIGHTRED_EX} \nAria2 is not installed. {Fore.LIGHTBLUE_EX}It is Optional, but Recommended for Faster Downloads.")
+        print(f"{Fore.LIGHTGREEN_EX}Download Aria2 Manually From: {Fore.LIGHTWHITE_EX}https://github.com/aria2/aria2/releases/tag/release-1.37.0\n") 
+        while True:
+            choice = input(f"{Fore.LIGHTYELLOW_EX}Do you want to continue without Aria2? {Fore.WHITE}(Y/n): ").strip().lower()
+            if choice in ('y', 'yes', ''):
+                clear_screen()
+                break
+            elif choice in ('n', 'no'):
+                print(Fore.LIGHTBLUE_EX + "Exiting...")
+                sys.exit(0)
+            else:
+                print(Fore.RED + "Invalid input. Please enter Y or n.")
 
     clear_screen()
     print(get_next_colour() + " Stream Scooper ".center(50, "=")); sleep(0.5)
@@ -150,16 +174,12 @@ def main():
                 urls = expanded_urls 
                 for url in urls:
                     if choice == '1':
-                        #print(Fore.BLUE + "\nProcessing URL...")
                         download_video_audio(url, save_path, cookie_file)    
                     elif choice == '2':
-                        #print(Fore.BLUE + "\nProcessing URL...")
                         download_audio_only(url, save_path, cookie_file)
                     elif choice == '3':
-                        #print(Fore.BLUE + "\nProcessing URL...")
                         download_subtitles(url, save_path, cookie_file)
                     elif choice == '4':
-                        #print(Fore.LIGHTRED_EX + "\nProcessing URL...")
                         download_video_audio_subtitles(url, save_path, cookie_file)
                 break 
             else:
