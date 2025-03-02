@@ -329,23 +329,15 @@ def convert_subtitles_to_srt(file_base, current_ext):
         if current_ext == 'srt':
             print(Fore.YELLOW + "Subtitles are already in .srt format.")
             return
-
-        # Uses ffmpeg to convert subtitle
-        command = [
-            'ffmpeg',
-            '-i', subtitle_file,
-            '-c:s', 'srt',  # Explicitly set subtitle codec to srt
-            srt_file
-        ]
         
-        result = sp.run(
-            command, 
-            check= True, 
-            stdout= sp.PIPE, 
-            stderr= sp.PIPE, 
-            text= True
+        sp.run(
+            ['ffmpeg', '-i', subtitle_file, '-c:s', 'srt', srt_file], 
+            check=True, 
+            stdout=sp.PIPE, 
+            stderr=sp.PIPE, 
+            text=True
         )
-
+        
         # Remove original file after successful conversion
         if os.path.exists(subtitle_file):
             os.remove(subtitle_file)
@@ -354,6 +346,7 @@ def convert_subtitles_to_srt(file_base, current_ext):
 
     except sp.CalledProcessError as e:
         print(Fore.RED + f"FFmpeg Error: {e.stderr}")
+        
         # Cleanup failed output
         if os.path.exists(srt_file):
             os.remove(srt_file)
