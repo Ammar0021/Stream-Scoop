@@ -3,9 +3,7 @@ import sys
 from time import sleep
 from datetime import datetime
 from colorama import init, Fore
-
-import yt_dlp 
-from yt_dlp.utils import DownloadError, ExtractorError, GeoRestrictedError, UnavailableVideoError, AgeRestrictedError
+from time import perf_counter
 
 init(autoreset=True)
 
@@ -33,8 +31,27 @@ def get_cookies():
             return cookie_file
         else:
             print(Fore.LIGHTRED_EX + f"Error: Cookie File {Fore.WHITE}'{cookie_file}'{Fore.LIGHTRED_EX} does not exist!")
+            
+def create_progress_hook():
+    start_time = None
+    end_time = None
 
-def log_download(url, save_path, download_type):
+    def progress_hook(d):
+        nonlocal start_time, end_time
+        if d['status'] == 'downloading':
+            if start_time is None:
+                start_time = perf_counter()
+        elif d['status'] == 'finished':
+            end_time = perf_counter()
+
+    def get_duration():
+        if start_time and end_time is not None:
+            return end_time - start_time
+        return None
+
+    return progress_hook, get_duration
+
+def log_download(url, save_path, download_type, duration=None):
     def ask_log():
         while True:
             try:
@@ -56,10 +73,28 @@ def log_download(url, save_path, download_type):
     
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
-    with open(log_file, "a") as f:
-        f.write(f"{download_type} | {url} | {save_path} | {timestamp}\n\n")
+    duration_str = ""
+    if duration:
+        total_seconds = duration
+        hours = int(total_seconds // 3600)
+        minutes = int((total_seconds % 3600) // 60)
+        seconds = int(total_seconds % 60)
         
+        if hours > 0:
+            duration_str = f"{hours}hr {minutes}min {seconds}s"
+        elif minutes > 0:
+            duration_str = f"{minutes}min {seconds}s"
+        else:
+            duration_str = f"{seconds}s"
+    
+    with open(log_file, "a") as f:
+        log_entry = f"{download_type} | {url} | {save_path} | {timestamp}"
+        if duration_str:
+            log_entry += f" | Duration: {duration_str}"
+        f.write(log_entry + "\n\n")
+    
     return True
+
 
 def unique_filename(title):
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -86,43 +121,32 @@ def handle_error(e):
     print(Fore.LIGHTRED_EX + f"\nError: {str(e)}")
     err_msg = str(e).lower()
 
-    # Network errors
-    if isinstance(e, yt_dlp.utils.DownloadError):
-        if "unable to download webpage" in err_msg or "network" in err_msg or "connection" in err_msg:
-            print(Fore.YELLOW + "Check your internet connection! (🌐)")
-
-    # Age-restricted content or login required
-    elif isinstance(e, AgeRestrictedError) or isinstance(e, ExtractorError) and 'age restricted' in err_msg:
+    if "unable to download webpage" in err_msg or "network" in err_msg or "connection" in err_msg:
+        print(Fore.YELLOW + "Check your internet connection! (🌐)")
+    
+    elif "age restricted" in err_msg or "sign in" in err_msg or "login required" in err_msg:
         print(Fore.LIGHTMAGENTA_EX + "Age-restricted or login-required content! Use cookies (🍪).")
-
-    # Private or unavailable content
-    elif isinstance(e, UnavailableVideoError) or "private" in err_msg or "unavailable" in err_msg or "not available" in err_msg:
+    
+    elif "private" in err_msg or "unavailable" in err_msg or "not available" in err_msg:
         print(Fore.YELLOW + "Video is private, unavailable, or requires login (🥷)")
 
-    # Copyright or regional restrictions
-    elif isinstance(e, GeoRestrictedError) or "copyright" in err_msg or "blocked" in err_msg or "content not available" in err_msg:
+    elif "copyright" in err_msg or "blocked" in err_msg or "content not available" in err_msg:
         print(Fore.YELLOW + "Content blocked due to copyright or regional restrictions (©️)")
 
-    # FFmpeg errors
-    elif isinstance(e, yt_dlp.utils.PostProcessingError) or "ffmpeg" in err_msg or "postprocessing" in err_msg:
+    elif "ffmpeg" in err_msg or "postprocessing" in err_msg:
         print(Fore.YELLOW + "FFmpeg error. Ensure it's installed and in PATH.")
-
-    # Cookies or authentication errors
-    elif isinstance(e, ExtractorError) and "cookies" in err_msg or "authentication" in err_msg:
+    
+    elif "cookies" in err_msg or "authentication" in err_msg:
         print(Fore.YELLOW + "Cookies error. Ensure the cookies file is valid and up-to-date.")
 
-    # Live stream issues
-    elif isinstance(e, yt_dlp.utils.LiveStreamError) or "live" in err_msg or "streaming" in err_msg:
+    elif "live" in err_msg or "streaming" in err_msg:
         print(Fore.YELLOW + "Live streams cannot be downloaded. You can download completed live streams though.")
 
-    # Invalid or unsupported URL
-    elif isinstance(e, yt_dlp.utils.UnsupportedURL) or "invalid url" in err_msg or "unsupported url" in err_msg:
+    elif "invalid url" in err_msg or "unsupported url" in err_msg:
         print(Fore.YELLOW + "Invalid or unsupported URL. Please check the URL and try again.")
-    
-    # Format or quality issues
-    elif isinstance(e, yt_dlp.utils.ExtractorError) and "format" in err_msg or "quality" in err_msg or "no video formats found" in err_msg:
+ 
+    elif "format" in err_msg or "quality" in err_msg or "no video formats found" in err_msg:
         print(Fore.YELLOW + "No downloadable formats found. The video may not be available in the requested format.")
         
-    # Default unknown error message
     else:
         print(Fore.YELLOW + "An unknown error occurred. Please check the URL, your settings, and try again.")

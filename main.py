@@ -6,6 +6,7 @@ from time import sleep
 import subprocess as sp
 import signal
 import yt_dlp as YT
+#from functools import lru_cache
 
 from download_logic import  download_video_audio, download_audio_only, download_subtitles, download_video_audio_subtitles
 from utilities import clear_screen, handle_error, get_cookies, ask_use_aria2c
@@ -17,6 +18,7 @@ clr.init(autoreset=True)
 You can Change the Current Default Path, by modifying the DEFAULT_PATH variable below'''
 DEFAULT_PATH = os.path.join(os.path.expanduser("~"), "Desktop", "Scooped") # '~' is the user's home directory
 
+#@lru_cache(maxsize=None)
 def check_dependencies():
     print(get_next_colour() + "Checking Dependencies...\n") ;sleep(0.6969)
     
@@ -110,8 +112,8 @@ def main():
     signal.signal(signal.SIGINT, signal_handler)
     ffmpeg_installed, aria2c_installed = check_dependencies()
     
-    print(f"FFmpeg Installed: {Fore.LIGHTGREEN_EX}{ffmpeg_installed}" if ffmpeg_installed else f"FFmpeg Installed: {Fore.LIGHTRED_EX}{ffmpeg_installed}")
-    print(f"Aria2c Installed: {Fore.LIGHTGREEN_EX}{aria2c_installed}" if aria2c_installed else f"Aria2 Installed: {Fore.LIGHTRED_EX}{aria2c_installed}") ;sleep(1)
+    print(f"FFmpeg Installed: {Fore.LIGHTGREEN_EX}{ffmpeg_installed}" if ffmpeg_installed else f"FFmpeg Installed: {Fore.LIGHTRED_EX}{ffmpeg_installed}");sleep(0.3)
+    print(f"Aria2c Installed: {Fore.LIGHTGREEN_EX}{aria2c_installed}" if aria2c_installed else f"Aria2 Installed: {Fore.LIGHTRED_EX}{aria2c_installed}") ;sleep(0.3)
     
     if not ffmpeg_installed:
         print(Fore.RED + "\nFFmpeg is not installed or not in PATH!")
