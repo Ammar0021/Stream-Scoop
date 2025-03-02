@@ -4,6 +4,9 @@ from time import sleep
 from datetime import datetime
 from colorama import init, Fore
 
+import yt_dlp 
+from yt_dlp.utils import DownloadError, ExtractorError, GeoRestrictedError, UnavailableVideoError, AgeRestrictedError
+
 init(autoreset=True)
 
 def clear_screen():
@@ -62,36 +65,64 @@ def unique_filename(title):
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     return f"{title}_{timestamp}"
 
+def ask_use_aria2c(aria2c_installed):
+    use_aria2c = False
+    if aria2c_installed:
+        while True:
+            choice = input(Fore.LIGHTCYAN_EX + "\nUse Aria2c for Faster Downloads? (Y/n): ").strip().lower()
+            if choice in ('', 'y', 'yes'):
+                print(Fore.LIGHTGREEN_EX + "Using Aria2c...") ;sleep(0.69)
+                use_aria2c = True
+                break
+            elif choice in ('n', 'no'):
+                print(Fore.LIGHTYELLOW_EX + "Using yt-dlp built in Downloader...") ;sleep(0.69)
+                use_aria2c = False
+                break
+            else:
+                print(Fore.RED + "Invalid input. Please enter 'Y' or 'n'.")
+    return use_aria2c
+
 def handle_error(e):
     print(Fore.LIGHTRED_EX + f"\nError: {str(e)}")
     err_msg = str(e).lower()
 
-    if "unable to download webpage" in err_msg or "network" in err_msg or "connection" in err_msg:
-        print(Fore.YELLOW + "Check your internet connection! (🌐)")
-    
-    elif "age restricted" in err_msg or "sign in" in err_msg or "login required" in err_msg:
+    # Network errors
+    if isinstance(e, yt_dlp.utils.DownloadError):
+        if "unable to download webpage" in err_msg or "network" in err_msg or "connection" in err_msg:
+            print(Fore.YELLOW + "Check your internet connection! (🌐)")
+
+    # Age-restricted content or login required
+    elif isinstance(e, AgeRestrictedError) or isinstance(e, ExtractorError) and 'age restricted' in err_msg:
         print(Fore.LIGHTMAGENTA_EX + "Age-restricted or login-required content! Use cookies (🍪).")
-    
-    elif "private" in err_msg or "unavailable" in err_msg or "not available" in err_msg:
+
+    # Private or unavailable content
+    elif isinstance(e, UnavailableVideoError) or "private" in err_msg or "unavailable" in err_msg or "not available" in err_msg:
         print(Fore.YELLOW + "Video is private, unavailable, or requires login (🥷)")
 
-    elif "copyright" in err_msg or "blocked" in err_msg or "content not available" in err_msg:
+    # Copyright or regional restrictions
+    elif isinstance(e, GeoRestrictedError) or "copyright" in err_msg or "blocked" in err_msg or "content not available" in err_msg:
         print(Fore.YELLOW + "Content blocked due to copyright or regional restrictions (©️)")
 
-    elif "ffmpeg" in err_msg or "postprocessing" in err_msg:
+    # FFmpeg errors
+    elif isinstance(e, yt_dlp.utils.PostProcessingError) or "ffmpeg" in err_msg or "postprocessing" in err_msg:
         print(Fore.YELLOW + "FFmpeg error. Ensure it's installed and in PATH.")
-    
-    elif "cookies" in err_msg or "authentication" in err_msg:
+
+    # Cookies or authentication errors
+    elif isinstance(e, ExtractorError) and "cookies" in err_msg or "authentication" in err_msg:
         print(Fore.YELLOW + "Cookies error. Ensure the cookies file is valid and up-to-date.")
 
-    elif "live" in err_msg or "streaming" in err_msg:
+    # Live stream issues
+    elif isinstance(e, yt_dlp.utils.LiveStreamError) or "live" in err_msg or "streaming" in err_msg:
         print(Fore.YELLOW + "Live streams cannot be downloaded. You can download completed live streams though.")
 
-    elif "invalid url" in err_msg or "unsupported url" in err_msg:
+    # Invalid or unsupported URL
+    elif isinstance(e, yt_dlp.utils.UnsupportedURL) or "invalid url" in err_msg or "unsupported url" in err_msg:
         print(Fore.YELLOW + "Invalid or unsupported URL. Please check the URL and try again.")
- 
-    elif "format" in err_msg or "quality" in err_msg or "no video formats found" in err_msg:
+    
+    # Format or quality issues
+    elif isinstance(e, yt_dlp.utils.ExtractorError) and "format" in err_msg or "quality" in err_msg or "no video formats found" in err_msg:
         print(Fore.YELLOW + "No downloadable formats found. The video may not be available in the requested format.")
         
+    # Default unknown error message
     else:
         print(Fore.YELLOW + "An unknown error occurred. Please check the URL, your settings, and try again.")
