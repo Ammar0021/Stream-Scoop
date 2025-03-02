@@ -8,7 +8,7 @@ import signal
 import yt_dlp as YT
 
 from download_logic import  download_video_audio, download_audio_only, download_subtitles, download_video_audio_subtitles
-from utilities import clear_screen, handle_error, get_cookies
+from utilities import clear_screen, handle_error, get_cookies, ask_use_aria2c
 from colours import *
 
 clr.init(autoreset=True)  
@@ -27,7 +27,7 @@ def check_dependencies():
         ffmpeg_installed = False
     
     try:
-        sp.run(['faria2c', '--version'], stdout=sp.PIPE, stderr=sp.PIPE, check=True)
+        sp.run(['aria2c', '--version'], stdout=sp.PIPE, stderr=sp.PIPE, check=True)
         aria2c_installed = True
     except (sp.CalledProcessError, FileNotFoundError):
         aria2c_installed = False
@@ -75,6 +75,7 @@ def get_save_path():
             choice = input("Use default path? (Y/n): ").strip().lower()
             if choice in ('', 'y', 'yes'):
                 save_path = DEFAULT_PATH
+                print(Fore.LIGHTGREEN_EX + f"Using Default Path: {DEFAULT_PATH}") ;sleep(0.69)
                 break  
             elif choice in ('n', 'no'):
                 try:
@@ -83,6 +84,7 @@ def get_save_path():
                     save_path = save_path.strip('"\'')
                     save_path = os.path.expanduser(save_path)
                     save_path = os.path.expandvars(save_path)
+                    print(Fore.LIGHTGREEN_EX + f"Using Custom Path: {save_path}") ;sleep(1)
 
                     if not os.path.exists(save_path):
                         raise ValueError(f"Path: '{save_path}' does not exist!")
@@ -109,7 +111,7 @@ def main():
     ffmpeg_installed, aria2c_installed = check_dependencies()
     
     print(f"FFmpeg Installed: {Fore.LIGHTGREEN_EX}{ffmpeg_installed}" if ffmpeg_installed else f"FFmpeg Installed: {Fore.LIGHTRED_EX}{ffmpeg_installed}")
-    print(f"Aria2 Installed: {Fore.LIGHTGREEN_EX}{aria2c_installed}" if aria2c_installed else f"Aria2 Installed: {Fore.LIGHTRED_EX}{aria2c_installed}") ;sleep(1)
+    print(f"Aria2c Installed: {Fore.LIGHTGREEN_EX}{aria2c_installed}" if aria2c_installed else f"Aria2 Installed: {Fore.LIGHTRED_EX}{aria2c_installed}") ;sleep(1)
     
     if not ffmpeg_installed:
         print(Fore.RED + "\nFFmpeg is not installed or not in PATH!")
@@ -123,7 +125,6 @@ def main():
         while True:
             choice = input(f"{Fore.LIGHTYELLOW_EX}Do you want to continue without Aria2? {Fore.WHITE}(Y/n): ").strip().lower()
             if choice in ('y', 'yes', ''):
-                clear_screen()
                 break
             elif choice in ('n', 'no'):
                 print(Fore.LIGHTBLUE_EX + "Exiting...")
@@ -141,10 +142,18 @@ def main():
         try:
             choice = input("\nEnter your choice (1-4): ").strip()
             if choice in ('1', '2', '3', '4'):
+                
                 cookie_file = get_cookies()
+                
+                if choice in('1', '2', '4'):   
+                    use_aria2c = ask_use_aria2c(aria2c_installed)
+                else:
+                    use_aria2c = False
+                    
+                save_path = get_save_path()
+                
                 clear_screen()
                 urls = get_url()
-                save_path = get_save_path()
                 
                 expanded_urls = []
                 for url in urls:
@@ -174,13 +183,13 @@ def main():
                 urls = expanded_urls 
                 for url in urls:
                     if choice == '1':
-                        download_video_audio(url, save_path, cookie_file)    
+                        download_video_audio(url, save_path, cookie_file, use_aria2c)    
                     elif choice == '2':
-                        download_audio_only(url, save_path, cookie_file)
+                        download_audio_only(url, save_path, cookie_file, use_aria2c)
                     elif choice == '3':
                         download_subtitles(url, save_path, cookie_file)
                     elif choice == '4':
-                        download_video_audio_subtitles(url, save_path, cookie_file)
+                        download_video_audio_subtitles(url, save_path, cookie_file, use_aria2c)
                 break 
             else:
                 raise ValueError(Fore.LIGHTRED_EX + "Invalid choice! Enter 1, 2, 3 or 4")
