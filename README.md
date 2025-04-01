@@ -31,6 +31,8 @@ A Sleek Script for Downloading Videos, Audios, and Subtitles from most websites 
 1. Clone the repository:
     ```sh
     git clone https://github.com/Ammar0021/Stream-Scoop.git
+    ```
+    ```sh
     cd Stream-Scoop
     ```
 
