@@ -102,7 +102,7 @@ A Sleek Script for Downloading Videos, Audios, and Subtitles from most websites 
   - **Save Path**: The directory where the file was saved.
   - **Type**: The type of download (e.g., Video, Audio, Subtitles).
   - **Duration**: The time taken to complete the download.
-- This log file is stored in the same directory as the script.
+- This log file is stored in the same directory as the download target folder.
 
 ---
 
