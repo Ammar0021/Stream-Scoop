@@ -1,43 +1,28 @@
 # Stream Scoop
 
-A sleek script for downloading videos, audios, and subtitles from most websites using `yt-dlp`.
+A Sleek Script for Downloading Videos, Audios, and Subtitles from most websites using `yt-dlp`.
 
 ---
 
 ## Requirements
 
 - **FFmpeg**: Required for downloading and processing videos and audios.
-  - Install FFmpeg manually from: [https://ffmpeg.org/download.html](https://ffmpeg.org/download.html)
-  - **MacOS/Linux**: Install via Homebrew:
+
+  - **MacOS/Linux**: Install via Homebrew (Terminal):
     ```sh
     brew install ffmpeg
     ```
-  - **Windows**: Install via Chocolatey:
+  - **Windows**: Install via Chocolatey (Windows Powershell):
     ```sh
     choco install ffmpeg
     ```
+- Install FFmpeg manually from: [https://ffmpeg.org/download.html](https://ffmpeg.org/download.html)
 
 - **Python Packages**: Listed in `requirements.txt`.
   - Install them using:
     ```sh
     pip install -r requirements.txt
     ```
-
----
-
-## Optional Tools
-
-- **aria2c**: A high-performance external downloader for faster downloads.
-  - If installed, the script will automatically use `aria2c` for optimized downloading.
-  - Install `aria2c`:
-    - **MacOS/Linux**:
-      ```sh
-      brew install aria2
-      ```
-    - **Windows**:
-      ```sh
-      choco install aria2
-      ```
 
 ---
 
@@ -58,6 +43,24 @@ A sleek script for downloading videos, audios, and subtitles from most websites 
 
 ---
 
+## Optional Tools
+
+- **aria2c**: A high-performance External Downloader for Faster downloads.
+  - If installed, the script will give you an option to either use `aria2c` or `yt-dlp`
+  - Install `aria2c` via `Terminal`/`Windows Powershell`:
+    - **MacOS/Linux**:
+      ```sh
+      brew install aria2
+      ```
+    - **Windows**:
+      ```sh
+      choco install aria2
+      ```
+- Install `aria2c` Manually from: [https://aria2.github.io/](https://aria2.github.io/)
+
+- **Note:** `aria2c` is NOT guaranteed to boost download speed
+---
+
 ## Usage
 
 1. Run the script:
@@ -75,43 +78,42 @@ A sleek script for downloading videos, audios, and subtitles from most websites 
     - Extract and download audio tracks in multiple bitrates and formats.
     - Fetch and download subtitles in different languages, including automatic captions.
 
-3. If `aria2c` is installed, it will be used automatically for faster downloads.
+--- 
 
+## Direct URL 
+
+If Media downloading is unsupported by a particular site, you can use a Chrome Extension like [Video Download Helper](https://chromewebstore.google.com/detail/video-downloadhelper/lmjnegcaeklhafolokijcfjliaokphfk) to Extract the Direct URL, which should work in yt-dlp
+
+
+--- 
+
+## Cookies Support
+
+- Use a browser extension like [Get cookies.txt (LOCALLY)](https://chromewebstore.google.com/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc) to Export cookies.
+- When prompted by the script, enter the PATH to your cookies file (Drag and Drop into terminal works). If you don't have a cookies file, you can skip this step, but note that some videos may not be downloadable without cookies.
+- Only use cookies when necessary, such as downloading private content/age-restricted content
+
+- **Note**: Use a TRUSTED Cookie Extractor, as cookie files hold sensitive data
 ---
+## Download Logging
 
-## Features
-
-- **Video Downloads**: Download videos in multiple resolutions, including 8K, 4K, and HD.
-- **Audio Downloads**: Extract and download audio tracks in various bitrates and formats.
-- **Subtitle Downloads**: Fetch and download subtitles in different languages, including automatic captions.
-- **Cookies Support**: Use cookies to download age-restricted or private videos. The script will prompt you to provide a cookies file if needed.
-- **Optimized Downloads**: Supports `aria2c` for faster and more reliable downloads.
+- Every successful download is logged in a file named `download_history.txt` (if accepted by the user).
+- The log includes:
+  - **URL**: The source URL of the downloaded content.
+  - **Save Path**: The directory where the file was saved.
+  - **Type**: The type of download (e.g., Video, Audio, Subtitles).
+  - **Duration**: The time taken to complete the download.
+- This log file is stored in the same directory as the script.
 
 ---
 
 ## Supported Sites
 
-Stream Scoop supports all websites supported by `yt-dlp`. For a full list, refer to the [Supported Sites](supportedsites.md) page.
-
----
-
-## Cookies
-
-To download age-restricted or private videos, you may need to provide a cookies file. Follow these steps:
-
-1. Use a browser extension like [Get cookies.txt (LOCALLY)](https://chromewebstore.google.com/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc) to export cookies.
-2. When prompted by the script, drag and drop the cookies file or enter its path.
+- Refer to [Supported Sites](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md) for a comprehensive lists of yt-dlp supported sites 
+- **Note:** yt-dlp will fallback to a Generic Extractor if you download from an unsupported site (This may NOT work all the time)
 
 ---
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
-
----
-
-## Troubleshooting
-
-- **FFmpeg not found**: Ensure FFmpeg is installed and added to your system's PATH.
-- **aria2c not detected**: Install `aria2c` and ensure it is added to your system's PATH.
-- **Permission issues**: Run the script with elevated privileges if necessary.
+This project is licensed under the [MIT License](LICENSE)
