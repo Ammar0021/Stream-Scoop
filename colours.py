@@ -10,7 +10,6 @@ DISTINCT_COLOURS = [
     Fore.BLUE,
     Fore.MAGENTA,
     Fore.CYAN,
-    Fore.BLACK,
 ]
 
 COLOUR_VARIANTS = {

@@ -80,16 +80,6 @@ def download_video_audio(url, save_path, cookie_file=None, use_aria2c=False):
             }
             if use_aria2c:
                 download_opts['external_downloader'] = 'aria2c'
-                download_opts['external_downloader_args'] = [
-                    '-x8',   # Max 16 connections per server
-                    '-s8',   # Split into 16 pieces
-                    '-j8',   # 16 concurrent downloads per file
-                    '--min-split-size=4M',  # 4Mb minimum split size
-                    '--file-allocation=none',  # Faster start time, by avoiding allocation
-                    '--optimize-concurrent-downloads',  # Optimize for parallel downloads
-                    '--continue=true',  # Continue downloads if interrupted
-                    '--check-certificate=false',
-                ]
             
             clear_screen()
             print(Fore.CYAN + " Downloading Video... ".center(50, "="))
@@ -171,15 +161,6 @@ def download_audio_only(url, save_path, cookie_file=None, use_aria2c=False):
             }
             if use_aria2c:
                 download_opts['external_downloader'] = 'aria2c'
-                download_opts['external_downloader_args'] = [
-                    '-x8',   # Max 8 connections per server (reduced for smaller files)
-                    '-s8',   # Split into 8 pieces (reduced for smaller files)
-                    '-j8',   # 8 concurrent downloads per file (reduced for smaller files)
-                    '--min-split-size=1M',  # 1MB minimum split size (better for smaller files)
-                    '--file-allocation=none',  # Faster start time, by avoiding allocation
-                    '--optimize-concurrent-downloads',  # Optimize for parallel downloads
-                    '--continue=true',  # Continue downloads if interrupted
-                ]
 
             clear_screen()
             print(Fore.CYAN + f" Downloading Audio ({selected_format['bitrate']}kbps)... ".center(50, "="))
