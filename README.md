@@ -45,8 +45,9 @@ A Sleek Script for Downloading Videos, Audios, and Subtitles from most websites 
 
 ## Optional Tools
 
-- **aria2c**: A high-performance External Downloader for Faster downloads.
-  - If installed, the script will give you an option to either use `aria2c` or `yt-dlp`
+### aria2c
+- A high-performance External Downloader for Faster downloads.
+  - If installed, the script will give you an option to either use `aria2c` or `yt-dlp`.
   - Install `aria2c` via `Terminal`/`Windows Powershell`:
     - **MacOS/Linux**:
       ```sh
@@ -56,10 +57,23 @@ A Sleek Script for Downloading Videos, Audios, and Subtitles from most websites 
       ```sh
       choco install aria2
       ```
-- Install `aria2c` Manually from: [https://aria2.github.io/](https://aria2.github.io/)
+  - Install `aria2c` Manually from: [https://aria2.github.io/](https://aria2.github.io/)
 
-- **Note:** `aria2c` is NOT guaranteed to boost download speed
+- **Note:** `aria2c` is NOT guaranteed to boost download speed.
+
 ---
+
+### Cookies Support
+- Use a browser extension like [Get cookies.txt (LOCALLY)](https://chromewebstore.google.com/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc) to export cookies.
+- When prompted by the script, enter the PATH to your cookies file (Drag and Drop into terminal works). If you don't have a cookies file, you can skip this step, but note that some videos may not be downloadable without cookies.
+- Only use cookies when necessary, such as downloading private content/age-restricted content.
+
+- **Note**: Use a TRUSTED Cookie Extractor, as cookie files hold sensitive data.
+
+---
+
+### Direct URL
+- If media downloading is unsupported by a particular site, you can use a Chrome Extension like [Video Download Helper](https://chromewebstore.google.com/detail/video-downloadhelper/lmjnegcaeklhafolokijcfjliaokphfk) to extract the Direct URL, which should work in `yt-dlp`.
 
 ## Usage
 
@@ -80,21 +94,6 @@ A Sleek Script for Downloading Videos, Audios, and Subtitles from most websites 
 
 --- 
 
-## Direct URL 
-
-If Media downloading is unsupported by a particular site, you can use a Chrome Extension like [Video Download Helper](https://chromewebstore.google.com/detail/video-downloadhelper/lmjnegcaeklhafolokijcfjliaokphfk) to Extract the Direct URL, which should work in yt-dlp
-
-
---- 
-
-## Cookies Support
-
-- Use a browser extension like [Get cookies.txt (LOCALLY)](https://chromewebstore.google.com/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc) to Export cookies.
-- When prompted by the script, enter the PATH to your cookies file (Drag and Drop into terminal works). If you don't have a cookies file, you can skip this step, but note that some videos may not be downloadable without cookies.
-- Only use cookies when necessary, such as downloading private content/age-restricted content
-
-- **Note**: Use a TRUSTED Cookie Extractor, as cookie files hold sensitive data
----
 ## Download Logging
 
 - Every successful download is logged in a file named `download_history.txt` (if accepted by the user).
