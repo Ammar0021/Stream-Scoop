@@ -112,6 +112,7 @@ A Sleek Script for Downloading Videos, Audios, and Subtitles from most websites 
 
 - Refer to [Supported Sites](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md) for a comprehensive lists of yt-dlp supported sites 
 - **Note:** yt-dlp will fallback to a Generic Extractor if you download from an unsupported site (This may NOT work all the time)
+- **Note:** [Video Download Helper](https://chromewebstore.google.com/detail/video-downloadhelper/lmjnegcaeklhafolokijcfjliaokphfk) extracition of Firect URL will almost always work
 
 ---
 
