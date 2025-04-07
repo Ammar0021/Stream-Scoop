@@ -4,9 +4,21 @@ A Sleek Script for Downloading Videos, Audios, and Subtitles from most websites 
 
 ---
 
+## Table of Contents
+1. [Requirements](#requirements)
+2. [Installation](#installation)
+3. [External Downloader](#external-downloader)
+4. [Cookies Support](#cookies-support)
+5. [Usage](#usage)
+6. [Download Logging](#download-logging)
+7. [Supported Sites](#supported-sites)
+8. [License](#license)
+
+---
+
 ## Requirements
 
-- **FFmpeg**: Required for downloading and processing videos and audios.
+1. **FFmpeg**: Required for Merging Videos and Audios.
 
   - **MacOS/Linux**: Install via Homebrew (Terminal):
     ```sh
@@ -16,13 +28,17 @@ A Sleek Script for Downloading Videos, Audios, and Subtitles from most websites 
     ```sh
     choco install ffmpeg
     ```
-- Install FFmpeg manually from: [https://ffmpeg.org/download.html](https://ffmpeg.org/download.html)
+- Or Install FFmpeg manually from: [https://ffmpeg.org/download.html](https://ffmpeg.org/download.html)
 
-- **Python Packages**: Listed in `requirements.txt`.
-  - Install them using:
-    ```sh
-    pip install -r requirements.txt
-    ```
+
+2. **Python 3.x**: Ensure Python is installed.
+   - Check your version:
+     - **Windows**: `python --version`
+     - **Linux/MacOS**: `python3 --version`
+
+3. **Python Packages**: Install dependencies from `requirements.txt`:
+   ```sh
+   pip install -r requirements.txt
 
 ---
 
@@ -45,7 +61,7 @@ A Sleek Script for Downloading Videos, Audios, and Subtitles from most websites 
 
 ---
 
-## Optional Tools
+## External Downloader
 
 ### aria2c
 - A high-performance External Downloader for Faster downloads.
@@ -62,6 +78,7 @@ A Sleek Script for Downloading Videos, Audios, and Subtitles from most websites 
   - Install `aria2c` Manually from: [https://aria2.github.io/](https://aria2.github.io/)
 
 - **Note:** `aria2c` is NOT guaranteed to boost download speed.
+- **Note:** `yt-dlp` built in downloader is more Reliable
 
 ---
 
