@@ -4,6 +4,8 @@
 
 3. Automation in playlist Downloading, auto select best quality, or fixed quality
 
+4. Check for yt-dlp update on startup
+
 4. Fix Errors with Subtitle conversions, remove JSON 3
 
 5. Revamp error messages
