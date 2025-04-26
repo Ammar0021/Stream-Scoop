@@ -13,3 +13,5 @@
 6. Update README file
 
 7. Add Intuitive experience in CLI 
+
+8. Download completed notification
