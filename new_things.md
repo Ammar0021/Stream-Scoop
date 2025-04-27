@@ -1,3 +1,6 @@
+New Things to Add in the Future
+
+
 1. Playlist Handling, Videos Displayed with Title, User can Select video(s)
 
 2. Playlist Handling, Dialogue and Logic changes (maybe new mode in startup)
