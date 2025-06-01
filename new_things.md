@@ -18,3 +18,5 @@ New Things to Add in the Future
 7. Add Intuitive experience in CLI 
 
 8. Download completed notification
+
+9. Change Output Name
