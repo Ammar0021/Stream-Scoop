@@ -383,4 +383,44 @@ def download_video_audio_subtitles(url, save_path, cookie_file=None, use_aria2c=
         print(Fore.LIGHTMAGENTA_EX + "Your files have been saved in:" + Fore.LIGHTYELLOW_EX + f" {save_path}")
     
     except Exception as e:
-        handle_error(e)
+        handle_error(e) 
+        
+        
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    

@@ -14,9 +14,7 @@ from colours import *
 
 clr.init(autoreset=True)  
 
-'''this AUTO creates a "Scooped" folder on ur Desktop (if does not exist),
-You can Change the Current Default Path, by modifying the DEFAULT_PATH variable below'''
-DEFAULT_PATH = os.path.join(os.path.expanduser("~"), "Desktop", "Scooped") # '~' is the user's home directory
+DEFAULT_PATH = os.path.join(os.path.expanduser('~'), 'Desktop', 'Stuff', 'Shortcuts', 'Scooped')
 
 #@lru_cache(maxsize=None)
 def check_dependencies():
